@@ -1,0 +1,4231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroSphere - Enterprise GenAI Platform | Talk. Build. Deploy.</title>
+    <meta name="description" content="Revolutionary AI Canvas Builder that transforms natural language into enterprise dashboards. Deploy AI at scale with zero-code development.">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --aurora-green: #00ff9f;
+            --aurora-blue: #0080ff;
+            --aurora-purple: #8b5cf6;
+            --aurora-cyan: #06b6d4;
+            --aurora-pink: #ff0080;
+            --aurora-dark: #0a0a0f;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(0, 255, 159, 0.3);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000814;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+
+        /* Enhanced Aurora Background with Particle System */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .aurora-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .aurora-layer-1 {
+            background: 
+                radial-gradient(ellipse 120% 80% at 10% 20%, rgba(0, 255, 159, 0.4) 0%, rgba(0, 255, 159, 0.15) 40%, transparent 70%),
+                radial-gradient(ellipse 100% 60% at 90% 30%, rgba(0, 255, 255, 0.35) 0%, rgba(0, 255, 255, 0.12) 50%, transparent 80%);
+            animation: auroraWave1 12s ease-in-out infinite;
+        }
+
+        .aurora-layer-2 {
+            background: 
+                radial-gradient(ellipse 80% 70% at 30% 10%, rgba(128, 0, 255, 0.3) 0%, rgba(128, 0, 255, 0.08) 60%, transparent 90%),
+                radial-gradient(ellipse 90% 50% at 70% 80%, rgba(255, 0, 128, 0.25) 0%, rgba(255, 0, 128, 0.05) 70%, transparent 100%);
+            animation: auroraWave2 16s ease-in-out infinite reverse;
+        }
+
+        .aurora-layer-3 {
+            background: 
+                radial-gradient(ellipse 110% 40% at 50% 60%, rgba(0, 128, 255, 0.2) 0%, rgba(0, 128, 255, 0.06) 80%, transparent 100%),
+                radial-gradient(ellipse 70% 90% at 20% 90%, rgba(0, 255, 159, 0.18) 0%, rgba(0, 255, 159, 0.04) 85%, transparent 100%);
+            animation: auroraWave3 20s ease-in-out infinite;
+        }
+
+        /* Enhanced Particle System */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--aurora-green);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: particleFloat 15s infinite linear;
+        }
+
+        .particle.type-2 {
+            background: var(--aurora-blue);
+            width: 1px;
+            height: 1px;
+            animation-duration: 20s;
+        }
+
+        .particle.type-3 {
+            background: var(--aurora-purple);
+            width: 3px;
+            height: 3px;
+            animation-duration: 25s;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes auroraWave1 {
+            0%, 100% {
+                opacity: 0.8;
+                transform: translateX(0px) translateY(0px) rotate(0deg) scale(1);
+                filter: hue-rotate(0deg);
+            }
+            25% {
+                opacity: 1;
+                transform: translateX(20px) translateY(-15px) rotate(2deg) scale(1.1);
+                filter: hue-rotate(30deg);
+            }
+            50% {
+                opacity: 0.9;
+                transform: translateX(35px) translateY(-25px) rotate(-1deg) scale(1.05);
+                filter: hue-rotate(60deg);
+            }
+            75% {
+                opacity: 0.95;
+                transform: translateX(10px) translateY(-10px) rotate(1deg) scale(1.08);
+                filter: hue-rotate(15deg);
+            }
+        }
+
+        @keyframes auroraWave2 {
+            0%, 100% {
+                opacity: 0.6;
+                transform: translateX(0px) translateY(0px) rotate(0deg) scale(1);
+                filter: hue-rotate(0deg) brightness(1);
+            }
+            33% {
+                opacity: 0.9;
+                transform: translateX(-30px) translateY(20px) rotate(-2deg) scale(1.15);
+                filter: hue-rotate(-45deg) brightness(1.2);
+            }
+            66% {
+                opacity: 0.75;
+                transform: translateX(-15px) translateY(35px) rotate(1deg) scale(0.95);
+                filter: hue-rotate(-90deg) brightness(0.9);
+            }
+        }
+
+        @keyframes auroraWave3 {
+            0%, 100% {
+                opacity: 0.7;
+                transform: translateX(0px) translateY(0px) rotate(0deg) scale(1);
+                filter: hue-rotate(0deg);
+            }
+            20% {
+                opacity: 0.85;
+                transform: translateX(25px) translateY(-20px) rotate(3deg) scale(1.12);
+                filter: hue-rotate(90deg);
+            }
+            40% {
+                opacity: 1;
+                transform: translateX(50px) translateY(-35px) rotate(-2deg) scale(1.2);
+                filter: hue-rotate(180deg);
+            }
+            60% {
+                opacity: 0.8;
+                transform: translateX(30px) translateY(-15px) rotate(1deg) scale(1.05);
+                filter: hue-rotate(270deg);
+            }
+            80% {
+                opacity: 0.9;
+                transform: translateX(15px) translateY(-5px) rotate(-1deg) scale(1.08);
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        /* Header with enhanced interactivity */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.85);
+            padding: 16px 0;
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(30px);
+        }
+
+        .nav-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: logoFloat 6s ease-in-out infinite;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(5deg); }
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--aurora-green);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .header-cta {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .header-cta:hover::before {
+            left: 100%;
+        }
+
+        .header-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 159, 0.3);
+        }
+
+        /* Enhanced Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 140px 40px 100px;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--aurora-green);
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            animation: badgePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 rgba(0, 255, 159, 0.4);
+            }
+            50% { 
+                box-shadow: 0 0 20px rgba(0, 255, 159, 0.4);
+            }
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(48px, 8vw, 72px);
+            font-weight: 900;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--aurora-green) 50%, var(--aurora-cyan) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleShimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes titleShimmer {
+            0%, 100% { 
+                background-position: 0% 50%; 
+            }
+            50% { 
+                background-position: 100% 50%; 
+            }
+        }
+
+        .hero-subtitle {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-weight: 400;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .primary-cta, .secondary-cta {
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .primary-cta {
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            color: #000;
+        }
+
+        .primary-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 255, 159, 0.4);
+        }
+
+        .secondary-cta {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+        }
+
+        .secondary-cta:hover {
+            background: rgba(0, 255, 159, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Revolutionary Canvas Builder Section */
+        .canvas-builder {
+            padding: 100px 40px;
+            background: 
+                radial-gradient(ellipse at 50% 0%, rgba(0, 255, 159, 0.05) 0%, transparent 70%);
+        }
+
+        .canvas-container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .canvas-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .canvas-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--aurora-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .canvas-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .canvas-subtitle {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Enhanced Demo Interface */
+        .demo-interface {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 32px;
+            min-height: 800px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 32px;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-interface::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(0, 255, 159, 0.05) 50%, transparent 70%);
+            animation: interfaceShine 5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes interfaceShine {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* Enhanced Chat Panel */
+        .chat-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            backdrop-filter: blur(15px);
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ai-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: avatarPulse 2s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-avatar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+            animation: avatarShine 3s ease-in-out infinite;
+        }
+
+        @keyframes avatarPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes avatarShine {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .ai-info h3 {
+            color: var(--text-primary);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .ai-status {
+            color: var(--aurora-green);
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--aurora-green);
+            border-radius: 50%;
+            animation: statusBlink 1s ease-in-out infinite;
+        }
+
+        @keyframes statusBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            padding-right: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--aurora-green);
+            border-radius: 2px;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            animation: messageAppear 0.3s ease-out;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.ai {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .message.user .message-content {
+            background: rgba(0, 255, 159, 0.2);
+            border: 1px solid rgba(0, 255, 159, 0.3);
+            color: var(--text-primary);
+        }
+
+        .message.ai .message-content {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            max-width: 80px;
+        }
+
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: var(--aurora-green);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .quick-prompts {
+            margin-bottom: 16px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .quick-prompt {
+            padding: 12px 16px;
+            background: rgba(0, 255, 159, 0.1);
+            border: 1px solid rgba(0, 255, 159, 0.2);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-prompt::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 159, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .quick-prompt:hover::before {
+            left: 100%;
+        }
+
+        .quick-prompt:hover {
+            background: rgba(0, 255, 159, 0.15);
+            border-color: rgba(0, 255, 159, 0.3);
+            transform: translateX(4px);
+        }
+
+        .input-area {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            min-height: 40px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--aurora-green);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 2px rgba(0, 255, 159, 0.2);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .send-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.3s ease;
+        }
+
+        .send-btn:hover::before {
+            left: 100%;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 255, 159, 0.4);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Revolutionary Canvas Panel */
+        .canvas-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(15px);
+        }
+
+        .canvas-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .control-dot:hover {
+            transform: scale(1.2);
+        }
+
+        .control-dot.red { 
+            background: #ef4444; 
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+        .control-dot.yellow { 
+            background: #f59e0b; 
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+        .control-dot.green { 
+            background: var(--aurora-green); 
+            box-shadow: 0 0 10px rgba(0, 255, 159, 0.5);
+        }
+
+        .canvas-title-text {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 16px;
+            background: linear-gradient(135deg, var(--text-primary), var(--aurora-green));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .canvas-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.3s ease;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            color: #000;
+        }
+
+        .action-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .canvas-content {
+            flex: 1;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Enhanced Canvas Grid with Real-time Updates */
+        .canvas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            min-height: 600px;
+            position: relative;
+        }
+
+        .canvas-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .canvas-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(0, 255, 159, 0.1) 50%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .canvas-item:hover::before {
+            opacity: 1;
+        }
+
+        .canvas-item:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: rgba(0, 255, 159, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 255, 159, 0.2);
+        }
+
+        .canvas-item.building {
+            border-color: var(--aurora-green);
+            box-shadow: 0 0 20px rgba(0, 255, 159, 0.3);
+            animation: buildingPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes buildingPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(0, 255, 159, 0.3);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 30px rgba(0, 255, 159, 0.5);
+            }
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .item-icon {
+            font-size: 24px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: iconShine 3s ease-in-out infinite;
+        }
+
+        @keyframes iconShine {
+            0%, 100% { left: -100%; }
+            50% { left: 100%; }
+        }
+
+        .item-info h4 {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .item-type {
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .item-content {
+            margin-bottom: 16px;
+        }
+
+        .item-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .item-metric:hover {
+            background: rgba(0, 255, 159, 0.05);
+            transform: translateX(2px);
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .metric-value.success { 
+            color: var(--aurora-green);
+            text-shadow: 0 0 10px rgba(0, 255, 159, 0.3);
+        }
+        .metric-value.warning { 
+            color: #fbbf24; 
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        }
+        .metric-value.info { 
+            color: var(--aurora-blue); 
+            text-shadow: 0 0 10px rgba(0, 128, 255, 0.3);
+        }
+        .metric-value.error { 
+            color: var(--error); 
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .item-action {
+            padding: 6px 12px;
+            background: rgba(0, 255, 159, 0.15);
+            border: 1px solid rgba(0, 255, 159, 0.3);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 159, 0.3), transparent);
+            transition: left 0.3s ease;
+        }
+
+        .item-action:hover::before {
+            left: 100%;
+        }
+
+        .item-action:hover {
+            background: rgba(0, 255, 159, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 255, 159, 0.2);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+            position: relative;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .chart-container canvas {
+            border-radius: 6px;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--aurora-green), var(--aurora-cyan));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progressShine 2s ease-in-out infinite;
+        }
+
+        @keyframes progressShine {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        /* Code Block */
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 159, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--aurora-green);
+            margin: 10px 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: 'Generated Code';
+            position: absolute;
+            top: -8px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--text-muted);
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Enhanced ML Services Platform */
+        .ml-services-platform {
+            padding: 120px 40px;
+            background: 
+                radial-gradient(ellipse at 0% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%),
+                radial-gradient(ellipse at 100% 50%, rgba(0, 255, 159, 0.05) 0%, transparent 70%);
+            position: relative;
+        }
+
+        .ml-services-container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .ml-services-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .ml-services-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: var(--glass-bg);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--aurora-purple);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            animation: badgePulse 3s ease-in-out infinite;
+        }
+
+        .ml-services-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(36px, 6vw, 64px);
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--aurora-purple) 50%, var(--aurora-blue) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleShimmer 4s ease-in-out infinite;
+        }
+
+        .ml-services-subtitle {
+            color: var(--text-secondary);
+            font-size: 20px;
+            max-width: 900px;
+            margin: 0 auto 40px;
+        }
+
+        /* Live Stats Dashboard */
+        .ml-services-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto 60px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 32px 24px;
+            background: var(--glass-bg);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(139, 92, 246, 0.1) 50%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-item:hover::before {
+            opacity: 1;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-6px);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+        }
+
+        .stat-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--aurora-purple);
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+            animation: statCounter 2s ease-out;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes statCounter {
+            from { 
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Enhanced ML Services Grid */
+        .ml-services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .ml-service-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ml-service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 255, 159, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ml-service-card:hover::before {
+            opacity: 1;
+        }
+
+        .ml-service-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 255, 159, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 255, 159, 0.1);
+        }
+
+        .service-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .service-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 255, 159, 0.3);
+        }
+
+        .service-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+            transform: translateX(-100%);
+            animation: iconShine 4s ease-in-out infinite;
+        }
+
+        .service-header-content {
+            flex: 1;
+        }
+
+        .service-title {
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--text-primary), var(--aurora-green));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .service-tagline {
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .service-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.active {
+            background: var(--aurora-green);
+            box-shadow: 0 0 10px rgba(0, 255, 159, 0.5);
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        .service-status span {
+            color: var(--aurora-green);
+        }
+
+        .service-metrics-preview {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .metric-preview {
+            background: rgba(0, 255, 159, 0.1);
+            border: 1px solid rgba(0, 255, 159, 0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            min-width: 100px;
+        }
+
+        .metric-preview .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--aurora-green);
+            display: block;
+            text-shadow: 0 0 10px rgba(0, 255, 159, 0.3);
+        }
+
+        .metric-preview .metric-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .service-card-content {
+            margin-bottom: 30px;
+        }
+
+        .service-description {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        /* Real-time Service Metrics */
+        .service-metrics-detailed {
+            margin-bottom: 30px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: rgba(0, 255, 159, 0.05);
+            border: 1px solid rgba(0, 255, 159, 0.2);
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(0, 255, 159, 0.1) 50%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .metric-card:hover::before {
+            opacity: 1;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 255, 159, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 255, 159, 0.1);
+        }
+
+        .metric-card .metric-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: var(--aurora-green);
+        }
+
+        .metric-card .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--aurora-green);
+            margin-bottom: 6px;
+            text-shadow: 0 0 15px rgba(0, 255, 159, 0.4);
+        }
+
+        .metric-card .metric-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .metric-trend {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .metric-trend.up { 
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .metric-trend.neutral { 
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        /* Enhanced Action Buttons */
+        .service-card-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+            color: #000;
+            box-shadow: 0 4px 15px rgba(0, 255, 159, 0.3);
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 159, 0.4);
+        }
+
+        .action-btn.secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.tertiary {
+            background: transparent;
+            border: 1px solid var(--aurora-green);
+            color: var(--aurora-green);
+        }
+
+        .action-btn.tertiary:hover {
+            background: rgba(0, 255, 159, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.quaternary {
+            background: rgba(0, 255, 159, 0.1);
+            border: 1px solid rgba(0, 255, 159, 0.3);
+            color: var(--aurora-green);
+        }
+
+        .action-btn.quaternary:hover {
+            background: rgba(0, 255, 159, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Loading States */
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 255, 159, 0.3);
+            border-top: 2px solid var(--aurora-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            backdrop-filter: blur(20px);
+            color: var(--text-primary);
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+            max-width: 350px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-color: var(--success);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);
+        }
+
+        .notification.error {
+            border-color: var(--error);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.2);
+        }
+
+        .notification.info {
+            border-color: var(--info);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Enhanced Responsive Design */
+        @media (max-width: 1400px) {
+            .demo-interface {
+                grid-template-columns: 400px 1fr;
+                gap: 24px;
+            }
+            
+            .canvas-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+            
+            .ml-services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .demo-interface {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            
+            .chat-panel {
+                max-height: 500px;
+            }
+            
+            .canvas-grid {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .nav-container {
+                padding: 0 20px;
+            }
+
+            .hero {
+                padding: 120px 20px 80px;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+
+            .primary-cta, .secondary-cta {
+                width: 100%;
+                max-width: 300px;
+                text-align: center;
+            }
+
+            .canvas-builder, .ml-services-platform {
+                padding: 80px 20px;
+            }
+
+            .demo-interface {
+                padding: 20px;
+            }
+
+            .canvas-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ml-service-card {
+                padding: 24px;
+            }
+
+            .service-card-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
+
+            .service-metrics-preview {
+                text-align: center;
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .ml-services-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .ml-services-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .service-card-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Aurora Background with Particle System -->
+    <div class="background">
+        <div class="aurora-layer aurora-layer-1"></div>
+        <div class="aurora-layer aurora-layer-2"></div>
+        <div class="aurora-layer aurora-layer-3"></div>
+    </div>
+    
+    <!-- Particle System -->
+    <div class="particles-container" id="particlesContainer"></div>
+
+    <!-- Enhanced Header -->
+    <header class="header" id="header">
+        <nav class="nav-container">
+            <a href="#" class="logo" aria-label="NeuroSphere Home">
+                <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NeuroSphere Logo" class="logo-icon">
+                    <circle cx="22" cy="22" r="20" stroke="url(#gradient1)" stroke-width="2.5" fill="none"/>
+                    <circle cx="22" cy="22" r="15" stroke="url(#gradient2)" stroke-width="2" fill="none" opacity="0.8"/>
+                    <circle cx="22" cy="22" r="10" stroke="url(#gradient3)" stroke-width="1.5" fill="none" opacity="0.6"/>
+                    <circle cx="22" cy="22" r="6" fill="url(#centerGradient)"/>
+                    <line x1="22" y1="2" x2="22" y2="12" stroke="url(#gradient1)" stroke-width="2.5"/>
+                    <line x1="22" y1="32" x2="22" y2="42" stroke="url(#gradient1)" stroke-width="2.5"/>
+                    <line x1="2" y1="22" x2="12" y2="22" stroke="url(#gradient1)" stroke-width="2.5"/>
+                    <line x1="32" y1="22" x2="42" y2="22" stroke="url(#gradient1)" stroke-width="2.5"/>
+                    <circle cx="22" cy="8" r="3" fill="url(#nodeGradient)" opacity="0.9"/>
+                    <circle cx="22" cy="36" r="3" fill="url(#nodeGradient)" opacity="0.9"/>
+                    <circle cx="8" cy="22" r="3" fill="url(#nodeGradient)" opacity="0.9"/>
+                    <circle cx="36" cy="22" r="3" fill="url(#nodeGradient)" opacity="0.9"/>
+                    <defs>
+                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#00ff9f;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#00ffff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0080ff;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#00ffff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#8000ff;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0080ff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#ff0080;stop-opacity:1" />
+                        </linearGradient>
+                        <radialGradient id="centerGradient" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:#00ff9f;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00ffff;stop-opacity:0.8" />
+                        </radialGradient>
+                        <radialGradient id="nodeGradient" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:#00ff9f;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00ffff;stop-opacity:1" />
+                        </radialGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">NeuroSphere</span>
+            </a>
+            <div class="nav-menu">
+                <a href="#platform" class="nav-link">Platform</a>
+                <a href="#canvas" class="nav-link">Canvas Builder</a>
+                <a href="#services" class="nav-link">ML Services</a>
+                <a href="#enterprise" class="nav-link">Enterprise</a>
+                <a href="#security" class="nav-link">Security</a>
+                <a href="#demo" class="header-cta">Request Demo</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Enhanced Hero Section -->
+    <section class="hero" id="main-content">
+        <div class="hero-content">
+            <div class="hero-badge">Next-Generation Enterprise GenAI Platform</div>
+            <h1 class="hero-title">Build AI Solutions with Natural Language</h1>
+            <p class="hero-subtitle">The Future of Enterprise AI Development</p>
+            <p class="hero-description">
+                Transform conversations into complete AI solutions. Build dashboards, deploy models, 
+                automate workflows, and scale enterprise AI with our revolutionary canvas builder 
+                that understands your business needs and creates production-ready solutions instantly.
+            </p>
+
+            <div class="hero-cta">
+                <a href="#canvas" class="primary-cta">Experience Canvas Builder</a>
+                <a href="#demo" class="secondary-cta">Schedule Enterprise Demo</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Revolutionary Canvas Builder -->
+    <section class="canvas-builder" id="canvas">
+        <div class="canvas-container">
+            <div class="canvas-header">
+                <div class="canvas-badge">Revolutionary AI Canvas Builder</div>
+                <h2 class="canvas-title">Talk. Build. Deploy.</h2>
+                <p class="canvas-subtitle">
+                    The first AI that builds complete enterprise solutions from conversation. 
+                    Combine dashboards, AI models, workflows, and applications with zero code required.
+                </p>
+            </div>
+
+            <div class="demo-interface">
+                <div class="chat-panel">
+                    <div class="ai-header">
+                        <div class="ai-avatar">🤖</div>
+                        <div class="ai-info">
+                            <h3>NeuroSphere AI Builder</h3>
+                            <div class="ai-status">Ready to create</div>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message ai">
+                            <div class="message-content">
+                                Hello! I'm your enterprise AI builder. I can create dashboards, applications, workflows, analytics tools, 
+                                automation systems, and complete enterprise solutions. What would you like to build today?
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="typing-indicator" id="typingIndicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+
+                    <div class="quick-prompts">
+                        <div class="quick-prompt" data-prompt="Build a comprehensive sales dashboard with revenue analytics, customer insights, lead scoring AI, and automated reporting workflows">📊 Sales Intelligence Platform</div>
+                        <div class="quick-prompt" data-prompt="Create a customer support system with AI chatbot, ticket management, knowledge base, sentiment analysis, and escalation workflows">🎧 Customer Support Suite</div>
+                        <div class="quick-prompt" data-prompt="Design a financial operations center with expense tracking, budget forecasting AI, compliance monitoring, and automated approval workflows">💰 Financial Operations Hub</div>
+                        <div class="quick-prompt" data-prompt="Build a marketing campaign manager with content generation AI, audience targeting, performance analytics, and automated optimization">🎯 Marketing Campaign Center</div>
+                    </div>
+
+                    <div class="input-area">
+                        <div class="input-wrapper">
+                            <textarea 
+                                id="chatInput" 
+                                class="chat-input" 
+                                placeholder="Describe what you want to build..."
+                                rows="2"
+                            ></textarea>
+                        </div>
+                        <button id="sendBtn" class="send-btn">⚡</button>
+                    </div>
+                </div>
+
+                <div class="canvas-panel">
+                    <div class="canvas-panel-header">
+                        <div class="window-controls">
+                            <div class="control-dot red"></div>
+                            <div class="control-dot yellow"></div>
+                            <div class="control-dot green"></div>
+                        </div>
+                        <div class="canvas-title-text" id="canvasTitle">Enterprise AI Solutions</div>
+                        <div class="canvas-actions">
+                            <button class="action-btn secondary" id="clearBtn">Clear</button>
+                            <button class="action-btn primary" id="deployBtn">Deploy</button>
+                        </div>
+                    </div>
+
+                    <div class="canvas-content">
+                        <div class="canvas-grid" id="canvasGrid">
+                            <!-- Dynamic content will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced ML Services Platform -->
+    <section class="ml-services-platform" id="services">
+        <div class="ml-services-container">
+            <div class="ml-services-header">
+                <div class="ml-services-badge">Revolutionary ML Platform Suite</div>
+                <h2 class="ml-services-title">Complete Machine Learning Lifecycle</h2>
+                <p class="ml-services-subtitle">
+                    Enterprise-grade ML operations platform providing end-to-end machine learning capabilities 
+                    from model creation to production monitoring. Built for scale, security, and compliance.
+                </p>
+                <div class="ml-services-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" data-target="10000000">0</div>
+                        <div class="stat-label">Models Deployed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" data-target="99.99">0</div>
+                        <div class="stat-label">Platform Uptime</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" data-target="500">0</div>
+                        <div class="stat-label">Enterprise Clients</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Global Support</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ml-services-grid">
+                <div class="ml-service-card" data-service="model-studio">
+                    <div class="service-card-header">
+                        <div class="service-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" fill="currentColor"/>
+                                <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="service-header-content">
+                            <h3 class="service-title">Model Creation Studio</h3>
+                            <p class="service-tagline">Intelligent model development platform</p>
+                            <div class="service-status">
+                                <div class="status-dot active"></div>
+                                <span>Production Ready</span>
+                            </div>
+                        </div>
+                        <div class="service-metrics-preview">
+                            <div class="metric-preview">
+                                <span class="metric-value" id="modelStudioMetric">85%</span>
+                                <span class="metric-label">Faster</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-content">
+                        <div class="service-description">
+                            Advanced model development environment with collaborative workspaces, automated feature engineering, 
+                            and intelligent hyperparameter optimization. Supports all major ML frameworks including TensorFlow, 
+                            PyTorch, Scikit-learn, and XGBoost with seamless version control and experiment tracking.
+                        </div>
+
+                        <div class="service-metrics-detailed">
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-icon">⚡</div>
+                                    <div class="metric-value" id="studioSpeed">23.4x</div>
+                                    <div class="metric-label">Speed Increase</div>
+                                    <div class="metric-trend up">↗ 15%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">🎯</div>
+                                    <div class="metric-value" id="studioAccuracy">97.2%</div>
+                                    <div class="metric-label">Avg Accuracy</div>
+                                    <div class="metric-trend up">↗ 3%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">🔬</div>
+                                    <div class="metric-value" id="studioExperiments">1,247</div>
+                                    <div class="metric-label">Active Experiments</div>
+                                    <div class="metric-trend up">↗ 12%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">⚙️</div>
+                                    <div class="metric-value" id="studioModels">89</div>
+                                    <div class="metric-label">Models Training</div>
+                                    <div class="metric-trend neutral">→ 0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-actions">
+                        <button class="action-btn primary">Start Building</button>
+                        <button class="action-btn secondary">View Templates</button>
+                        <button class="action-btn tertiary">Documentation</button>
+                        <button class="action-btn quaternary">Request Demo</button>
+                    </div>
+                </div>
+
+                <div class="ml-service-card" data-service="deployment-engine">
+                    <div class="service-card-header">
+                        <div class="service-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+                                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <circle cx="12" cy="7" r="2" fill="none" stroke="#000" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <div class="service-header-content">
+                            <h3 class="service-title">Deployment Engine</h3>
+                            <p class="service-tagline">Scale models with enterprise confidence</p>
+                            <div class="service-status">
+                                <div class="status-dot active"></div>
+                                <span>Production Ready</span>
+                            </div>
+                        </div>
+                        <div class="service-metrics-preview">
+                            <div class="metric-preview">
+                                <span class="metric-value" id="deploymentLatency">47ms</span>
+                                <span class="metric-label">Avg Latency</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-content">
+                        <div class="service-description">
+                            Enterprise-grade model deployment platform with automated containerization, intelligent load balancing, 
+                            and multi-cloud orchestration. Deploy models seamlessly across cloud, on-premise, and edge environments 
+                            with built-in A/B testing and canary deployment capabilities.
+                        </div>
+
+                        <div class="service-metrics-detailed">
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-icon">🚀</div>
+                                    <div class="metric-value" id="deploymentSpeed">2.3s</div>
+                                    <div class="metric-label">Deploy Time</div>
+                                    <div class="metric-trend up">↗ 45%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">📈</div>
+                                    <div class="metric-value" id="deploymentThroughput">847K</div>
+                                    <div class="metric-label">Requests/Min</div>
+                                    <div class="metric-trend up">↗ 23%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">🛡️</div>
+                                    <div class="metric-value" id="deploymentUptime">99.97%</div>
+                                    <div class="metric-label">Uptime</div>
+                                    <div class="metric-trend up">↗ 0.1%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">🌐</div>
+                                    <div class="metric-value" id="deploymentRegions">47</div>
+                                    <div class="metric-label">Global Regions</div>
+                                    <div class="metric-trend up">↗ 3</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-actions">
+                        <button class="action-btn primary">Deploy Models</button>
+                        <button class="action-btn secondary">Infrastructure</button>
+                        <button class="action-btn tertiary">Guide</button>
+                        <button class="action-btn quaternary">Request Demo</button>
+                    </div>
+                </div>
+
+                <div class="ml-service-card" data-service="model-governance">
+                    <div class="service-card-header">
+                        <div class="service-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" fill="currentColor"/>
+                                <path d="M9 12L11 14L16 9" stroke="#000" stroke-width="2" fill="none"/>
+                                <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+                            </svg>
+                        </div>
+                        <div class="service-header-content">
+                            <h3 class="service-title">Model Governance</h3>
+                            <p class="service-tagline">Enterprise-grade compliance and risk management</p>
+                            <div class="service-status">
+                                <div class="status-dot active"></div>
+                                <span>Production Ready</span>
+                            </div>
+                        </div>
+                        <div class="service-metrics-preview">
+                            <div class="metric-preview">
+                                <span class="metric-value" id="governanceCompliance">98.5%</span>
+                                <span class="metric-label">Compliance Score</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-content">
+                        <div class="service-description">
+                            Comprehensive governance framework ensuring model compliance, ethical AI practices, and regulatory adherence. 
+                            Automated policy enforcement, audit trails, and risk assessment across the entire ML lifecycle with 
+                            built-in SOC2, GDPR, and industry-specific compliance monitoring.
+                        </div>
+
+                        <div class="service-metrics-detailed">
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-icon">🛡️</div>
+                                    <div class="metric-value" id="governancePolicies">156</div>
+                                    <div class="metric-label">Active Policies</div>
+                                    <div class="metric-trend up">↗ 8%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">📋</div>
+                                    <div class="metric-value" id="governanceAudits">24/24</div>
+                                    <div class="metric-label">Audits Passed</div>
+                                    <div class="metric-trend up">↗ 100%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">⚠️</div>
+                                    <div class="metric-value" id="governanceRisk">Low</div>
+                                    <div class="metric-label">Risk Level</div>
+                                    <div class="metric-trend up">↗ Stable</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">📊</div>
+                                    <div class="metric-value" id="governanceReports">89</div>
+                                    <div class="metric-label">Monthly Reports</div>
+                                    <div class="metric-trend up">↗ 12%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-actions">
+                        <button class="action-btn primary">Manage Policies</button>
+                        <button class="action-btn secondary">Audit Trail</button>
+                        <button class="action-btn tertiary">Compliance</button>
+                        <button class="action-btn quaternary">Request Demo</button>
+                    </div>
+                </div>
+
+                <div class="ml-service-card" data-service="evaluation-service">
+                    <div class="service-card-header">
+                        <div class="service-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="3" width="18" height="18" rx="2" fill="currentColor"/>
+                                <path d="M9 9L15 15M15 9L9 15" stroke="#000" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+                                <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                            </svg>
+                        </div>
+                        <div class="service-header-content">
+                            <h3 class="service-title">Evaluation as a Service</h3>
+                            <p class="service-tagline">Comprehensive model performance assessment</p>
+                            <div class="service-status">
+                                <div class="status-dot active"></div>
+                                <span>Production Ready</span>
+                            </div>
+                        </div>
+                        <div class="service-metrics-preview">
+                            <div class="metric-preview">
+                                <span class="metric-value" id="evaluationAccuracy">95.8%</span>
+                                <span class="metric-label">Avg Model Score</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-content">
+                        <div class="service-description">
+                            Automated model evaluation platform providing comprehensive performance metrics, fairness analysis, and 
+                            benchmarking against industry standards. Real-time evaluation pipelines with custom metric definitions, 
+                            statistical significance testing, and detailed performance breakdowns across data segments.
+                        </div>
+
+                        <div class="service-metrics-detailed">
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-icon">📊</div>
+                                    <div class="metric-value" id="evaluationTests">2,847</div>
+                                    <div class="metric-label">Tests Run Today</div>
+                                    <div class="metric-trend up">↗ 18%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">🎯</div>
+                                    <div class="metric-value" id="evaluationMetrics">47</div>
+                                    <div class="metric-label">Custom Metrics</div>
+                                    <div class="metric-trend up">↗ 6</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">⚡</div>
+                                    <div class="metric-value" id="evaluationSpeed">1.2s</div>
+                                    <div class="metric-label">Avg Eval Time</div>
+                                    <div class="metric-trend up">↗ 23%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">📈</div>
+                                    <div class="metric-value" id="evaluationBenchmarks">127</div>
+                                    <div class="metric-label">Benchmarks</div>
+                                    <div class="metric-trend up">↗ 15</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-actions">
+                        <button class="action-btn primary">Run Evaluation</button>
+                        <button class="action-btn secondary">Benchmarks</button>
+                        <button class="action-btn tertiary">Reports</button>
+                        <button class="action-btn quaternary">Request Demo</button>
+                    </div>
+                </div>
+
+                <div class="ml-service-card" data-service="validation-service">
+                    <div class="service-card-header">
+                        <div class="service-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 12L11 14L15 10M21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3C16.97 3 21 7.03 21 12Z" fill="currentColor"/>
+                                <circle cx="12" cy="12" r="3" fill="#000"/>
+                                <path d="M12 8V12L14 14" stroke="currentColor" stroke-width="1" fill="none"/>
+                            </svg>
+                        </div>
+                        <div class="service-header-content">
+                            <h3 class="service-title">Validation as a Service</h3>
+                            <p class="service-tagline">Automated model validation and testing</p>
+                            <div class="service-status">
+                                <div class="status-dot active"></div>
+                                <span>Production Ready</span>
+                            </div>
+                        </div>
+                        <div class="service-metrics-preview">
+                            <div class="metric-preview">
+                                <span class="metric-value" id="validationSuccess">97.2%</span>
+                                <span class="metric-label">Pass Rate</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-content">
+                        <div class="service-description">
+                            Enterprise validation platform ensuring model reliability through automated testing suites, data quality 
+                            validation, and statistical robustness checks. Comprehensive validation workflows with edge case detection, 
+                            adversarial testing, and production-readiness certification for mission-critical deployments.
+                        </div>
+
+                        <div class="service-metrics-detailed">
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-icon">✅</div>
+                                    <div class="metric-value" id="validationPassed">1,542</div>
+                                    <div class="metric-label">Tests Passed</div>
+                                    <div class="metric-trend up">↗ 7%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">🔍</div>
+                                    <div class="metric-value" id="validationCoverage">94.3%</div>
+                                    <div class="metric-label">Test Coverage</div>
+                                    <div class="metric-trend up">↗ 2%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">⚠️</div>
+                                    <div class="metric-value" id="validationIssues">23</div>
+                                    <div class="metric-label">Issues Found</div>
+                                    <div class="metric-trend up">↗ -15%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">🛡️</div>
+                                    <div class="metric-value" id="validationCertified">89</div>
+                                    <div class="metric-label">Models Certified</div>
+                                    <div class="metric-trend up">↗ 12</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-actions">
+                        <button class="action-btn primary">Start Validation</button>
+                        <button class="action-btn secondary">Test Suites</button>
+                        <button class="action-btn tertiary">Certification</button>
+                        <button class="action-btn quaternary">Request Demo</button>
+                    </div>
+                </div>
+
+                <div class="ml-service-card" data-service="monitoring-service">
+                    <div class="service-card-header">
+                        <div class="service-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="2" y="3" width="20" height="14" rx="2" fill="currentColor"/>
+                                <path d="M8 21L16 21" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 17L12 21" stroke="currentColor" stroke-width="2"/>
+                                <path d="M7 8L12 13L17 8" stroke="#000" stroke-width="2" fill="none"/>
+                                <circle cx="12" cy="10" r="2" fill="#000"/>
+                            </svg>
+                        </div>
+                        <div class="service-header-content">
+                            <h3 class="service-title">Monitoring as a Service</h3>
+                            <p class="service-tagline">Real-time model performance monitoring</p>
+                            <div class="service-status">
+                                <div class="status-dot active"></div>
+                                <span>Production Ready</span>
+                            </div>
+                        </div>
+                        <div class="service-metrics-preview">
+                            <div class="metric-preview">
+                                <span class="metric-value" id="monitoringUptime">99.99%</span>
+                                <span class="metric-label">Monitor Uptime</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-content">
+                        <div class="service-description">
+                            Real-time monitoring platform tracking model performance, data drift, and operational metrics across all 
+                            environments. Advanced alerting system with predictive anomaly detection, automated incident response, 
+                            and comprehensive dashboards for continuous model health and business impact assessment.
+                        </div>
+
+                        <div class="service-metrics-detailed">
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-icon">📡</div>
+                                    <div class="metric-value" id="monitoringModels">347</div>
+                                    <div class="metric-label">Models Monitored</div>
+                                    <div class="metric-trend up">↗ 23</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">🚨</div>
+                                    <div class="metric-value" id="monitoringAlerts">12</div>
+                                    <div class="metric-label">Active Alerts</div>
+                                    <div class="metric-trend neutral">→ 0%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">📊</div>
+                                    <div class="metric-value" id="monitoringMetrics">15K</div>
+                                    <div class="metric-label">Metrics/Min</div>
+                                    <div class="metric-trend up">↗ 8%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-icon">⚡</div>
+                                    <div class="metric-value" id="monitoringResponse">0.8s</div>
+                                    <div class="metric-label">Alert Response</div>
+                                    <div class="metric-trend up">↗ 12%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-card-actions">
+                        <button class="action-btn primary">View Dashboard</button>
+                        <button class="action-btn secondary">Set Alerts</button>
+                        <button class="action-btn tertiary">Analytics</button>
+                        <button class="action-btn quaternary">Request Demo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification System -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Global state management
+        const AppState = {
+            isBuilding: false,
+            currentProject: null,
+            realTimeUpdates: true,
+            chatHistory: [],
+            canvasItems: [],
+            metrics: {
+                modelsDeployed: 0,
+                platformUptime: 99.99,
+                enterpriseClients: 500,
+                modelStudioSpeed: 85,
+                deploymentLatency: 47
+            }
+        };
+
+        // Utility Functions
+        const Utils = {
+            randomBetween(min, max) {
+                return Math.random() * (max - min) + min;
+            },
+            
+            formatNumber(num) {
+                if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+                return num.toString();
+            },
+            
+            generateId() {
+                return 'item_' + Math.random().toString(36).substr(2, 9);
+            },
+            
+            showNotification(message, type = 'info', duration = 3000) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type}`;
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, duration);
+            }
+        };
+
+        // Enhanced Particle System
+        class ParticleSystem {
+            constructor() {
+                this.container = document.getElementById('particlesContainer');
+                this.particles = [];
+                this.maxParticles = 100;
+                this.init();
+            }
+            
+            init() {
+                this.createParticles();
+                this.startAnimation();
+            }
+            
+            createParticles() {
+                for (let i = 0; i < this.maxParticles; i++) {
+                    this.createParticle();
+                }
+            }
+            
+            createParticle() {
+                const particle = document.createElement('div');
+                particle.className = `particle ${['', 'type-2', 'type-3'][Math.floor(Math.random() * 3)]}`;
+                
+                // Random starting position
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                
+                this.container.appendChild(particle);
+                this.particles.push(particle);
+                
+                // Remove and recreate particle after animation
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.remove();
+                        this.createParticle();
+                    }
+                }, (15 + Math.random() * 10) * 1000);
+            }
+            
+            startAnimation() {
+                // Additional particle effects on user interaction
+                document.addEventListener('mousemove', (e) => {
+                    if (Math.random() < 0.02) { // 2% chance on mouse move
+                        this.createInteractiveParticle(e.clientX, e.clientY);
+                    }
+                });
+            }
+            
+            createInteractiveParticle(x, y) {
+                const particle = document.createElement('div');
+                particle.className = 'particle type-2';
+                particle.style.position = 'fixed';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.animation = 'particleFloat 3s ease-out forwards';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1000';
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 3000);
+            }
+        }
+
+        // Enhanced Chat Interface
+        class ChatInterface {
+            constructor() {
+                this.chatInput = document.getElementById('chatInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.chatMessages = document.getElementById('chatMessages');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                this.quickPrompts = document.querySelectorAll('.quick-prompt');
+                
+                this.init();
+            }
+            
+            init() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.chatInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                
+                // Quick prompts
+                this.quickPrompts.forEach(prompt => {
+                    prompt.addEventListener('click', () => {
+                        const message = prompt.getAttribute('data-prompt');
+                        this.chatInput.value = message;
+                        this.sendMessage();
+                    });
+                });
+                
+                // Auto-resize textarea
+                this.chatInput.addEventListener('input', () => {
+                    this.chatInput.style.height = 'auto';
+                    this.chatInput.style.height = Math.min(this.chatInput.scrollHeight, 120) + 'px';
+                });
+            }
+            
+            sendMessage() {
+                const message = this.chatInput.value.trim();
+                if (!message) return;
+                
+                this.addMessage(message, 'user');
+                this.chatInput.value = '';
+                this.chatInput.style.height = 'auto';
+                
+                // Show typing indicator
+                this.showTypingIndicator();
+                
+                // Process message and generate response
+                setTimeout(() => {
+                    this.processMessage(message);
+                }, Utils.randomBetween(1500, 3000));
+            }
+            
+            addMessage(content, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.textContent = content;
+                
+                messageDiv.appendChild(contentDiv);
+                this.chatMessages.appendChild(messageDiv);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                
+                AppState.chatHistory.push({ content, sender, timestamp: Date.now() });
+            }
+            
+            showTypingIndicator() {
+                this.typingIndicator.style.display = 'flex';
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+            
+            hideTypingIndicator() {
+                this.typingIndicator.style.display = 'none';
+            }
+            
+            processMessage(message) {
+                this.hideTypingIndicator();
+                
+                // Analyze message and generate appropriate response
+                const analysis = this.analyzeMessage(message);
+                const response = this.generateResponse(analysis);
+                
+                this.addMessage(response.text, 'ai');
+                
+                // Trigger canvas building
+                if (response.shouldBuild) {
+                    canvasBuilder.buildFromMessage(message, analysis);
+                }
+                
+                Utils.showNotification('Building your solution...', 'info');
+            }
+            
+            analyzeMessage(message) {
+                const keywords = {
+                    dashboard: ['dashboard', 'analytics', 'metrics', 'reporting', 'visualization'],
+                    ai: ['ai', 'machine learning', 'ml', 'model', 'neural', 'deep learning'],
+                    automation: ['automation', 'workflow', 'process', 'automate'],
+                    finance: ['financial', 'revenue', 'budget', 'expenses', 'profit'],
+                    sales: ['sales', 'crm', 'leads', 'customers', 'conversion'],
+                    support: ['support', 'tickets', 'help desk', 'customer service'],
+                    marketing: ['marketing', 'campaign', 'social media', 'content', 'advertising']
+                };
+                
+                const analysis = {
+                    type: 'general',
+                    complexity: 1,
+                    keywords: [],
+                    entities: []
+                };
+                
+                const lowerMessage = message.toLowerCase();
+                
+                // Detect primary type
+                for (const [type, terms] of Object.entries(keywords)) {
+                    if (terms.some(term => lowerMessage.includes(term))) {
+                        analysis.type = type;
+                        analysis.keywords.push(...terms.filter(term => lowerMessage.includes(term)));
+                        break;
+                    }
+                }
+                
+                // Complexity analysis
+                if (lowerMessage.includes('comprehensive') || lowerMessage.includes('complete')) {
+                    analysis.complexity = 3;
+                } else if (lowerMessage.includes('advanced') || lowerMessage.includes('enterprise')) {
+                    analysis.complexity = 2;
+                }
+                
+                return analysis;
+            }
+            
+            generateResponse(analysis) {
+                const responses = {
+                    dashboard: {
+                        text: "Perfect! I'm building a comprehensive analytics dashboard with real-time data visualization, interactive charts, and automated reporting. This will include data connectors, KPI tracking, and customizable widgets.",
+                        shouldBuild: true
+                    },
+                    ai: {
+                        text: "Excellent! Creating an advanced AI/ML platform with model training capabilities, deployment pipelines, and performance monitoring. I'll include automated feature engineering and hyperparameter optimization.",
+                        shouldBuild: true
+                    },
+                    automation: {
+                        text: "Great choice! Building a workflow automation system with visual process designer, trigger management, and integration capabilities. This will streamline your operations significantly.",
+                        shouldBuild: true
+                    },
+                    finance: {
+                        text: "Building a financial operations suite with expense tracking, budget forecasting, compliance monitoring, and automated approval workflows. Perfect for enterprise financial management!",
+                        shouldBuild: true
+                    },
+                    sales: {
+                        text: "Creating a sales intelligence platform with CRM integration, lead scoring AI, revenue analytics, and automated follow-up systems. This will boost your sales performance!",
+                        shouldBuild: true
+                    },
+                    support: {
+                        text: "Developing a customer support ecosystem with AI-powered chatbots, ticket management, knowledge base, and sentiment analysis. Your customers will love this!",
+                        shouldBuild: true
+                    },
+                    marketing: {
+                        text: "Building a marketing campaign center with content generation AI, audience targeting, performance analytics, and automated optimization. Ready to scale your marketing!",
+                        shouldBuild: true
+                    },
+                    general: {
+                        text: "I understand you want to build something amazing! Could you provide more details about the specific type of solution you need? I can create dashboards, AI models, automation systems, and much more.",
+                        shouldBuild: false
+                    }
+                };
+                
+                return responses[analysis.type] || responses.general;
+            }
+        }
+
+        // Revolutionary Canvas Builder
+        class CanvasBuilder {
+            constructor() {
+                this.canvasGrid = document.getElementById('canvasGrid');
+                this.canvasTitle = document.getElementById('canvasTitle');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.deployBtn = document.getElementById('deployBtn');
+                this.charts = new Map();
+                
+                this.init();
+                this.loadDefaultItems();
+            }
+            
+            init() {
+                this.clearBtn.addEventListener('click', () => this.clearCanvas());
+                this.deployBtn.addEventListener('click', () => this.deployCanvas());
+            }
+            
+            buildFromMessage(message, analysis) {
+                AppState.isBuilding = true;
+                
+                // Update canvas title
+                this.updateCanvasTitle(analysis.type);
+                
+                // Clear existing items
+                this.clearCanvas();
+                
+                // Build appropriate components based on analysis
+                setTimeout(() => {
+                    this.generateComponents(analysis);
+                }, 500);
+            }
+            
+            updateCanvasTitle(type) {
+                const titles = {
+                    dashboard: 'Analytics Dashboard Suite',
+                    ai: 'AI/ML Operations Platform',
+                    automation: 'Workflow Automation System',
+                    finance: 'Financial Operations Center',
+                    sales: 'Sales Intelligence Platform',
+                    support: 'Customer Support Ecosystem',
+                    marketing: 'Marketing Campaign Center',
+                    general: 'Enterprise AI Solutions'
+                };
+                
+                this.canvasTitle.textContent = titles[type] || titles.general;
+            }
+            
+            generateComponents(analysis) {
+                const componentGenerators = {
+                    dashboard: () => this.generateDashboardComponents(),
+                    ai: () => this.generateAIComponents(),
+                    automation: () => this.generateAutomationComponents(),
+                    finance: () => this.generateFinanceComponents(),
+                    sales: () => this.generateSalesComponents(),
+                    support: () => this.generateSupportComponents(),
+                    marketing: () => this.generateMarketingComponents()
+                };
+                
+                const generator = componentGenerators[analysis.type] || (() => this.generateDefaultComponents());
+                generator();
+            }
+            
+            generateDashboardComponents() {
+                const components = [
+                    {
+                        icon: '📊',
+                        title: 'Real-time Analytics',
+                        type: 'Live Dashboard',
+                        metrics: [
+                            { label: 'Active Users', value: '2,847', status: 'success' },
+                            { label: 'Conversion Rate', value: '12.4%', status: 'success' },
+                            { label: 'Revenue Today', value: '$47,293', status: 'info' }
+                        ],
+                        actions: ['View', 'Export', 'Share'],
+                        hasChart: true
+                    },
+                    {
+                        icon: '🎯',
+                        title: 'KPI Tracking',
+                        type: 'Performance Metrics',
+                        metrics: [
+                            { label: 'Goal Progress', value: '87%', status: 'success' },
+                            { label: 'Target Achievement', value: '94%', status: 'success' },
+                            { label: 'Efficiency Score', value: '91%', status: 'warning' }
+                        ],
+                        actions: ['Track', 'Analyze', 'Report']
+                    },
+                    {
+                        icon: '📈',
+                        title: 'Trend Analysis',
+                        type: 'Predictive Analytics',
+                        metrics: [
+                            { label: 'Growth Rate', value: '+23%', status: 'success' },
+                            { label: 'Forecast Accuracy', value: '96%', status: 'success' },
+                            { label: 'Trend Confidence', value: '89%', status: 'info' }
+                        ],
+                        actions: ['Predict', 'Optimize', 'Alert']
+                    },
+                    {
+                        icon: '🔍',
+                        title: 'Data Explorer',
+                        type: 'Interactive Analysis',
+                        metrics: [
+                            { label: 'Datasets Connected', value: '23', status: 'info' },
+                            { label: 'Queries Executed', value: '1,247', status: 'success' },
+                            { label: 'Processing Speed', value: '0.3s', status: 'success' }
+                        ],
+                        actions: ['Query', 'Filter', 'Drill-down']
+                    }
+                ];
+                
+                this.renderComponents(components);
+            }
+            
+            generateAIComponents() {
+                const components = [
+                    {
+                        icon: '🧠',
+                        title: 'Model Training Hub',
+                        type: 'ML Operations',
+                        metrics: [
+                            { label: 'Models Training', value: '12', status: 'info' },
+                            { label: 'Avg Accuracy', value: '94.2%', status: 'success' },
+                            { label: 'Training Speed', value: '23x', status: 'success' }
+                        ],
+                        actions: ['Train', 'Validate', 'Deploy'],
+                        hasProgress: true,
+                        hasCode: true
+                    },
+                    {
+                        icon: '⚡',
+                        title: 'Inference Engine',
+                        type: 'Real-time Predictions',
+                        metrics: [
+                            { label: 'Predictions/sec', value: '15,000', status: 'success' },
+                            { label: 'Latency', value: '12ms', status: 'success' },
+                            { label: 'Accuracy', value: '97.8%', status: 'success' }
+                        ],
+                        actions: ['Predict', 'Scale', 'Monitor']
+                    },
+                    {
+                        icon: '🔬',
+                        title: 'Experiment Tracker',
+                        type: 'ML Experiments',
+                        metrics: [
+                            { label: 'Active Experiments', value: '8', status: 'info' },
+                            { label: 'Best F1 Score', value: '0.942', status: 'success' },
+                            { label: 'Hyperparams Tested', value: '847', status: 'info' }
+                        ],
+                        actions: ['Compare', 'Optimize', 'Save']
+                    },
+                    {
+                        icon: '📋',
+                        title: 'Model Registry',
+                        type: 'Version Control',
+                        metrics: [
+                            { label: 'Models Registered', value: '156', status: 'info' },
+                            { label: 'Production Models', value: '23', status: 'success' },
+                            { label: 'Version Control', value: 'Git+MLflow', status: 'success' }
+                        ],
+                        actions: ['Version', 'Promote', 'Rollback']
+                    }
+                ];
+                
+                this.renderComponents(components);
+            }
+            
+            generateFinanceComponents() {
+                const components = [
+                    {
+                        icon: '💰',
+                        title: 'Revenue Analytics',
+                        type: 'Financial Dashboard',
+                        metrics: [
+                            { label: 'Monthly Revenue', value: '$2.4M', status: 'success' },
+                            { label: 'Growth Rate', value: '+18%', status: 'success' },
+                            { label: 'Profit Margin', value: '23.7%', status: 'success' }
+                        ],
+                        actions: ['Forecast', 'Analyze', 'Export'],
+                        hasChart: true
+                    },
+                    {
+                        icon: '📊',
+                        title: 'Budget Tracker',
+                        type: 'Expense Management',
+                        metrics: [
+                            { label: 'Budget Utilized', value: '67%', status: 'success' },
+                            { label: 'Remaining Budget', value: '$847K', status: 'info' },
+                            { label: 'Overspend Risk', value: 'Low', status: 'success' }
+                        ],
+                        actions: ['Track', 'Alert', 'Approve']
+                    },
+                    {
+                        icon: '🔒',
+                        title: 'Compliance Monitor',
+                        type: 'Risk Management',
+                        metrics: [
+                            { label: 'Compliance Score', value: '98%', status: 'success' },
+                            { label: 'Risk Level', value: 'Low', status: 'success' },
+                            { label: 'Audits Passed', value: '12/12', status: 'success' }
+                        ],
+                        actions: ['Audit', 'Report', 'Remediate']
+                    },
+                    {
+                        icon: '⚙️',
+                        title: 'Approval Workflow',
+                        type: 'Process Automation',
+                        metrics: [
+                            { label: 'Pending Approvals', value: '23', status: 'warning' },
+                            { label: 'Avg Processing', value: '2.3 hrs', status: 'success' },
+                            { label: 'Auto-approved', value: '89%', status: 'success' }
+                        ],
+                        actions: ['Approve', 'Escalate', 'Automate']
+                    }
+                ];
+                
+                this.renderComponents(components);
+            }
+            
+            generateSalesComponents() {
+                const components = [
+                    {
+                        icon: '🎯',
+                        title: 'Sales Pipeline',
+                        type: 'CRM Integration',
+                        metrics: [
+                            { label: 'Pipeline Value', value: '$4.2M', status: 'success' },
+                            { label: 'Conversion Rate', value: '23%', status: 'success' },
+                            { label: 'Avg Deal Size', value: '$47K', status: 'info' }
+                        ],
+                        actions: ['Track', 'Convert', 'Forecast'],
+                        hasChart: true
+                    },
+                    {
+                        icon: '🧠',
+                        title: 'Lead Scoring AI',
+                        type: 'Predictive Analytics',
+                        metrics: [
+                            { label: 'Hot Leads', value: '47', status: 'error' },
+                            { label: 'Scoring Accuracy', value: '91%', status: 'success' },
+                            { label: 'Conversion Lift', value: '+34%', status: 'success' }
+                        ],
+                        actions: ['Score', 'Prioritize', 'Contact']
+                    },
+                    {
+                        icon: '📈',
+                        title: 'Revenue Analytics',
+                        type: 'Performance Tracking',
+                        metrics: [
+                            { label: 'Monthly Target', value: '87%', status: 'warning' },
+                            { label: 'YTD Growth', value: '+42%', status: 'success' },
+                            { label: 'Team Performance', value: '94%', status: 'success' }
+                        ],
+                        actions: ['Analyze', 'Report', 'Optimize']
+                    },
+                    {
+                        icon: '🤖',
+                        title: 'Sales Automation',
+                        type: 'Workflow Engine',
+                        metrics: [
+                            { label: 'Automated Tasks', value: '1,247', status: 'success' },
+                            { label: 'Time Saved', value: '23 hrs', status: 'success' },
+                            { label: 'Follow-ups Sent', value: '89', status: 'info' }
+                        ],
+                        actions: ['Automate', 'Schedule', 'Track']
+                    }
+                ];
+                
+                this.renderComponents(components);
+            }
+            
+            generateSupportComponents() {
+                const components = [
+                    {
+                        icon: '🎧',
+                        title: 'Support Dashboard',
+                        type: 'Ticket Management',
+                        metrics: [
+                            { label: 'Open Tickets', value: '23', status: 'warning' },
+                            { label: 'Avg Response', value: '4 mins', status: 'success' },
+                            { label: 'Resolution Rate', value: '94%', status: 'success' }
+                        ],
+                        actions: ['Assign', 'Escalate', 'Close'],
+                        hasChart: true
+                    },
+                    {
+                        icon: '🤖',
+                        title: 'AI Chatbot',
+                        type: 'Automated Support',
+                        metrics: [
+                            { label: 'Conversations', value: '847', status: 'info' },
+                            { label: 'Resolution Rate', value: '73%', status: 'success' },
+                            { label: 'Satisfaction', value: '4.7/5', status: 'success' }
+                        ],
+                        actions: ['Train', 'Deploy', 'Monitor']
+                    },
+                    {
+                        icon: '📚',
+                        title: 'Knowledge Base',
+                        type: 'Self-service Portal',
+                        metrics: [
+                            { label: 'Articles', value: '234', status: 'info' },
+                            { label: 'Views Today', value: '1,247', status: 'success' },
+                            { label: 'Helpfulness', value: '89%', status: 'success' }
+                        ],
+                        actions: ['Update', 'Organize', 'Analytics']
+                    },
+                    {
+                        icon: '📊',
+                        title: 'Sentiment Analysis',
+                        type: 'Customer Intelligence',
+                        metrics: [
+                            { label: 'Positive Sentiment', value: '78%', status: 'success' },
+                            { label: 'Neutral', value: '18%', status: 'info' },
+                            { label: 'Negative', value: '4%', status: 'warning' }
+                        ],
+                        actions: ['Analyze', 'Alert', 'Improve']
+                    }
+                ];
+                
+                this.renderComponents(components);
+            }
+            
+            generateMarketingComponents() {
+                const components = [
+                    {
+                        icon: '🎯',
+                        title: 'Campaign Manager',
+                        type: 'Multi-channel Marketing',
+                        metrics: [
+                            { label: 'Active Campaigns', value: '12', status: 'info' },
+                            { label: 'Reach', value: '2.4M', status: 'success' },
+                            { label: 'Engagement Rate', value: '7.8%', status: 'success' }
+                        ],
+                        actions: ['Launch', 'Optimize', 'Report'],
+                        hasChart: true
+                    },
+                    {
+                        icon: '✨',
+                        title: 'Content Generation AI',
+                        type: 'Creative Automation',
+                        metrics: [
+                            { label: 'Content Generated', value: '847', status: 'success' },
+                            { label: 'Engagement Lift', value: '+45%', status: 'success' },
+                            { label: 'Time Saved', value: '67 hrs', status: 'success' }
+                        ],
+                        actions: ['Generate', 'Edit', 'Publish']
+                    },
+                    {
+                        icon: '🎭',
+                        title: 'Audience Targeting',
+                        type: 'Customer Segmentation',
+                        metrics: [
+                            { label: 'Segments Created', value: '23', status: 'info' },
+                            { label: 'Targeting Accuracy', value: '91%', status: 'success' },
+                            { label: 'Conversion Rate', value: '12.4%', status: 'success' }
+                        ],
+                        actions: ['Segment', 'Target', 'Personalize']
+                    },
+                    {
+                        icon: '📈',
+                        title: 'Performance Analytics',
+                        type: 'ROI Tracking',
+                        metrics: [
+                            { label: 'ROAS', value: '4.2x', status: 'success' },
+                            { label: 'CTR', value: '3.4%', status: 'success' },
+                            { label: 'Cost per Lead', value: '$23', status: 'success' }
+                        ],
+                        actions: ['Track', 'Optimize', 'Scale']
+                    }
+                ];
+                
+                this.renderComponents(components);
+            }
+            
+            generateDefaultComponents() {
+                const components = [
+                    {
+                        icon: '📊',
+                        title: 'Analytics Dashboard',
+                        type: 'Data Visualization',
+                        metrics: [
+                            { label: 'Data Sources', value: '12', status: 'info' },
+                            { label: 'Visualizations', value: '45', status: 'success' },
+                            { label: 'Update Frequency', value: 'Real-time', status: 'success' }
+                        ],
+                        actions: ['View', 'Export', 'Share']
+                    },
+                    {
+                        icon: '🧠',
+                        title: 'AI Assistant',
+                        type: 'Intelligent Automation',
+                        metrics: [
+                            { label: 'Tasks Automated', value: '234', status: 'success' },
+                            { label: 'Accuracy', value: '96%', status: 'success' },
+                            { label: 'Time Saved', value: '45 hrs', status: 'success' }
+                        ],
+                        actions: ['Configure', 'Train', 'Deploy']
+                    }
+                ];
+                
+                this.renderComponents(components);
+            }
+            
+            renderComponents(components) {
+                components.forEach((component, index) => {
+                    setTimeout(() => {
+                        this.createCanvasItem(component);
+                    }, index * 300);
+                });
+                
+                AppState.isBuilding = false;
+                Utils.showNotification('Solution built successfully!', 'success');
+            }
+            
+            createCanvasItem(config) {
+                const item = document.createElement('div');
+                item.className = 'canvas-item building';
+                item.id = Utils.generateId();
+                
+                // Item header
+                const header = document.createElement('div');
+                header.className = 'item-header';
+                header.innerHTML = `
+                    <div class="item-icon">${config.icon}</div>
+                    <div class="item-info">
+                        <h4>${config.title}</h4>
+                        <div class="item-type">${config.type}</div>
+                    </div>
+                `;
+                
+                // Item content
+                const content = document.createElement('div');
+                content.className = 'item-content';
+                
+                // Metrics
+                if (config.metrics) {
+                    config.metrics.forEach(metric => {
+                        const metricDiv = document.createElement('div');
+                        metricDiv.className = 'item-metric';
+                        metricDiv.innerHTML = `
+                            <span class="metric-label">${metric.label}</span>
+                            <span class="metric-value ${metric.status}">${metric.value}</span>
+                        `;
+                        content.appendChild(metricDiv);
+                    });
+                }
+                
+                // Progress bar
+                if (config.hasProgress) {
+                    const progressDiv = document.createElement('div');
+                    progressDiv.className = 'progress-bar';
+                    const progressValue = Math.floor(Math.random() * 40) + 60;
+                    progressDiv.innerHTML = `
+                        <div class="progress-fill" style="width: ${progressValue}%"></div>
+                    `;
+                    content.appendChild(progressDiv);
+                }
+                
+                // Code block
+                if (config.hasCode) {
+                    const codeDiv = document.createElement('div');
+                    codeDiv.className = 'code-block';
+                    codeDiv.innerHTML = `
+# Training neural network
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(10, activation='softmax')
+])
+
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+                    `.trim();
+                    content.appendChild(codeDiv);
+                }
+                
+                // Chart
+                if (config.hasChart) {
+                    const chartDiv = document.createElement('div');
+                    chartDiv.className = 'chart-container';
+                    const canvas = document.createElement('canvas');
+                    canvas.id = `chart-${item.id}`;
+                    chartDiv.appendChild(canvas);
+                    content.appendChild(chartDiv);
+                    
+                    // Create chart after DOM insertion
+                    setTimeout(() => {
+                        this.createChart(canvas.id, config.title);
+                    }, 100);
+                }
+                
+                // Actions
+                const actions = document.createElement('div');
+                actions.className = 'item-actions';
+                if (config.actions) {
+                    config.actions.forEach(action => {
+                        const actionBtn = document.createElement('div');
+                        actionBtn.className = 'item-action';
+                        actionBtn.textContent = action;
+                        actionBtn.addEventListener('click', () => {
+                            Utils.showNotification(`${action} action triggered for ${config.title}`, 'info');
+                        });
+                        actions.appendChild(actionBtn);
+                    });
+                }
+                
+                // Assemble item
+                item.appendChild(header);
+                item.appendChild(content);
+                item.appendChild(actions);
+                
+                this.canvasGrid.appendChild(item);
+                AppState.canvasItems.push({ id: item.id, config });
+                
+                // Remove building class after animation
+                setTimeout(() => {
+                    item.classList.remove('building');
+                }, 1000);
+            }
+            
+            createChart(canvasId, title) {
+                const ctx = document.getElementById(canvasId);
+                if (!ctx) return;
+                
+                const data = {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: title,
+                        data: Array.from({length: 6}, () => Math.floor(Math.random() * 1000) + 500),
+                        borderColor: '#00ff9f',
+                        backgroundColor: 'rgba(0, 255, 159, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                };
+                
+                const config = {
+                    type: 'line',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.6)'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.6)'
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                const chart = new Chart(ctx, config);
+                this.charts.set(canvasId, chart);
+                
+                // Animate chart data
+                this.animateChart(chart);
+            }
+            
+            animateChart(chart) {
+                setInterval(() => {
+                    if (AppState.realTimeUpdates) {
+                        chart.data.datasets[0].data = chart.data.datasets[0].data.map(() => 
+                            Math.floor(Math.random() * 1000) + 500
+                        );
+                        chart.update('none');
+                    }
+                }, 3000);
+            }
+            
+            clearCanvas() {
+                this.canvasGrid.innerHTML = '';
+                AppState.canvasItems = [];
+                this.charts.forEach(chart => chart.destroy());
+                this.charts.clear();
+                Utils.showNotification('Canvas cleared', 'info');
+            }
+            
+            deployCanvas() {
+                if (AppState.canvasItems.length === 0) {
+                    Utils.showNotification('Nothing to deploy. Build something first!', 'warning');
+                    return;
+                }
+                
+                Utils.showNotification('Deploying to production...', 'info');
+                
+                // Simulate deployment process
+                setTimeout(() => {
+                    Utils.showNotification('Successfully deployed to production!', 'success');
+                    this.updateMetrics();
+                }, 2000);
+            }
+            
+            updateMetrics() {
+                AppState.metrics.modelsDeployed += AppState.canvasItems.length;
+                this.updateStatCounters();
+            }
+            
+            updateStatCounters() {
+                const statElements = document.querySelectorAll('.stat-value[data-target]');
+                statElements.forEach(element => {
+                    const target = parseInt(element.getAttribute('data-target'));
+                    this.animateCounter(element, target);
+                });
+            }
+            
+            animateCounter(element, target, duration = 2000) {
+                const start = parseInt(element.textContent) || 0;
+                const startTime = performance.now();
+                
+                const animate = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const current = Math.floor(start + (target - start) * progress);
+                    
+                    if (target >= 1000000) {
+                        element.textContent = (current / 1000000).toFixed(1) + 'M+';
+                    } else if (target >= 1000) {
+                        element.textContent = (current / 1000).toFixed(1) + 'K+';
+                    } else {
+                        element.textContent = current + (element.textContent.includes('%') ? '%' : '');
+                    }
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                
+                requestAnimationFrame(animate);
+            }
+            
+            loadDefaultItems() {
+                // Load some default items to show the platform capabilities
+                const defaultComponents = [
+                    {
+                        icon: '📊',
+                        title: 'ML Operations Dashboard',
+                        type: 'Analytics Dashboard',
+                        metrics: [
+                            { label: 'Models Deployed', value: '23 Active', status: 'info' },
+                            { label: 'Avg Performance', value: '94.2%', status: 'success' },
+                            { label: 'Data Quality Score', value: '97.8%', status: 'success' }
+                        ],
+                        actions: ['Monitor', 'Analyze', 'Report']
+                    },
+                    {
+                        icon: '🔍',
+                        title: 'Model Validation Suite',
+                        type: 'ML Validation',
+                        metrics: [
+                            { label: 'Test Coverage', value: '100%', status: 'success' },
+                            { label: 'Validation Score', value: 'A+ Grade', status: 'success' }
+                        ],
+                        actions: ['Test', 'Validate', 'Approve']
+                    },
+                    {
+                        icon: '📈',
+                        title: 'Performance Evaluation',
+                        type: 'ML Evaluation',
+                        metrics: [
+                            { label: 'Model Accuracy', value: '96.7%', status: 'success' },
+                            { label: 'F1 Score', value: '0.942', status: 'success' }
+                        ],
+                        actions: ['Benchmark', 'Compare', 'Optimize']
+                    },
+                    {
+                        icon: '🎯',
+                        title: 'Real-time Monitoring',
+                        type: 'ML Monitoring',
+                        metrics: [
+                            { label: 'Data Drift', value: '0.12', status: 'warning' },
+                            { label: 'Model Drift', value: '0.03', status: 'success' }
+                        ],
+                        actions: ['Alert', 'Track', 'Retrain']
+                    }
+                ];
+                
+                defaultComponents.forEach((component, index) => {
+                    setTimeout(() => {
+                        this.createCanvasItem(component);
+                    }, index * 200);
+                });
+            }
+        }
+
+        // Real-time Metrics System
+        class MetricsSystem {
+            constructor() {
+                this.metrics = AppState.metrics;
+                this.init();
+            }
+            
+            init() {
+                this.startRealTimeUpdates();
+                this.updateServiceMetrics();
+            }
+            
+            startRealTimeUpdates() {
+                setInterval(() => {
+                    if (AppState.realTimeUpdates) {
+                        this.updateRealTimeMetrics();
+                    }
+                }, 2000);
+            }
+            
+            updateRealTimeMetrics() {
+                // Update various metrics with realistic fluctuations
+                this.updateElement('modelStudioMetric', () => 
+                    Utils.randomBetween(83, 87).toFixed(0) + '%'
+                );
+                
+                this.updateElement('deploymentLatency', () => 
+                    Utils.randomBetween(45, 52).toFixed(0) + 'ms'
+                );
+                
+                // Update service metrics
+                this.updateElement('studioSpeed', () => 
+                    Utils.randomBetween(22, 25).toFixed(1) + 'x'
+                );
+                
+                this.updateElement('studioAccuracy', () => 
+                    Utils.randomBetween(96, 98).toFixed(1) + '%'
+                );
+                
+                this.updateElement('studioExperiments', () => 
+                    Math.floor(Utils.randomBetween(1200, 1300)).toString()
+                );
+                
+                this.updateElement('studioModels', () => 
+                    Math.floor(Utils.randomBetween(85, 95)).toString()
+                );
+                
+                this.updateElement('deploymentSpeed', () => 
+                    Utils.randomBetween(2.1, 2.5).toFixed(1) + 's'
+                );
+                
+                this.updateElement('deploymentThroughput', () => 
+                    Math.floor(Utils.randomBetween(840, 855)) + 'K'
+                );
+                
+                this.updateElement('deploymentUptime', () => 
+                    Utils.randomBetween(99.95, 99.99).toFixed(2) + '%'
+                );
+                
+                this.updateElement('deploymentRegions', () => 
+                    Math.floor(Utils.randomBetween(45, 49)).toString()
+                );
+            }
+            
+            updateElement(id, valueGenerator) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = valueGenerator();
+                }
+            }
+            
+            updateServiceMetrics() {
+                // Update service cards with real-time data
+                const serviceCards = document.querySelectorAll('.ml-service-card');
+                serviceCards.forEach(card => {
+                    const service = card.getAttribute('data-service');
+                    if (service) {
+                        this.updateServiceCard(card, service);
+                    }
+                });
+            }
+            
+            updateServiceCard(card, service) {
+                // Add interactive behaviors to service cards
+                card.addEventListener('mouseenter', () => {
+                    this.highlightServiceMetrics(card);
+                });
+                
+                // Add click handlers to action buttons
+                const actionBtns = card.querySelectorAll('.action-btn');
+                actionBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const action = btn.textContent.trim();
+                        this.handleServiceAction(service, action);
+                    });
+                });
+            }
+            
+            highlightServiceMetrics(card) {
+                const metricValues = card.querySelectorAll('.metric-value');
+                metricValues.forEach(metric => {
+                    metric.style.animation = 'none';
+                    setTimeout(() => {
+                        metric.style.animation = 'statCounter 0.5s ease-out';
+                    }, 10);
+                });
+            }
+            
+            handleServiceAction(service, action) {
+                const actionMessages = {
+                    'model-studio': {
+                        'Start Building': 'Opening Model Studio with pre-configured templates...',
+                        'View Templates': 'Loading 50+ ML model templates for rapid development...',
+                        'Documentation': 'Opening comprehensive API documentation and tutorials...',
+                        'Request Demo': 'Scheduling personalized demo with ML experts...'
+                    },
+                    'deployment-engine': {
+                        'Deploy Models': 'Initializing containerized deployment pipeline...',
+                        'Infrastructure': 'Showing multi-cloud infrastructure management console...',
+                        'Guide': 'Opening step-by-step deployment guide...',
+                        'Request Demo': 'Connecting with deployment specialists...'
+                    },
+                    'model-governance': {
+                        'Manage Policies': 'Opening governance policy management dashboard...',
+                        'Audit Trail': 'Loading comprehensive audit trail and compliance logs...',
+                        'Compliance': 'Showing regulatory compliance monitoring center...',
+                        'Request Demo': 'Scheduling demo with governance specialists...'
+                    },
+                    'evaluation-service': {
+                        'Run Evaluation': 'Starting comprehensive model evaluation pipeline...',
+                        'Benchmarks': 'Loading industry benchmark comparison suite...',
+                        'Reports': 'Generating detailed evaluation performance reports...',
+                        'Request Demo': 'Connecting with evaluation platform experts...'
+                    },
+                    'validation-service': {
+                        'Start Validation': 'Initializing automated validation test suites...',
+                        'Test Suites': 'Loading comprehensive validation testing framework...',
+                        'Certification': 'Opening production readiness certification portal...',
+                        'Request Demo': 'Scheduling validation platform walkthrough...'
+                    },
+                    'monitoring-service': {
+                        'View Dashboard': 'Opening real-time monitoring and alerting dashboard...',
+                        'Set Alerts': 'Configuring intelligent alerting and notification system...',
+                        'Analytics': 'Loading advanced monitoring analytics and insights...',
+                        'Request Demo': 'Connecting with monitoring platform specialists...'
+                    }
+                };
+                
+                const message = actionMessages[service]?.[action] || `Executing ${action} for ${service}...`;
+                Utils.showNotification(message, 'info');
+                
+                // Simulate loading state
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.innerHTML = '<span class="loading-spinner"></span>Processing...';
+                btn.disabled = true;
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // Enhanced Header Scroll Effects
+        class HeaderEffects {
+            constructor() {
+                this.header = document.getElementById('header');
+                this.init();
+            }
+            
+            init() {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 50) {
+                        this.header.classList.add('scrolled');
+                    } else {
+                        this.header.classList.remove('scrolled');
+                    }
+                });
+            }
+        }
+
+        // Initialize all systems when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize particle system
+            new ParticleSystem();
+            
+            // Initialize chat interface
+            new ChatInterface();
+            
+            // Initialize canvas builder
+            window.canvasBuilder = new CanvasBuilder();
+            
+            // Initialize metrics system
+            new MetricsSystem();
+            
+            // Initialize header effects
+            new HeaderEffects();
+            
+            // Start stat counter animations on scroll
+            const observerOptions = {
+                threshold: 0.3
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const statValues = entry.target.querySelectorAll('.stat-value[data-target]');
+                        statValues.forEach(element => {
+                            const target = parseInt(element.getAttribute('data-target'));
+                            canvasBuilder.animateCounter(element, target);
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+            
+            const statsSection = document.querySelector('.ml-services-stats');
+            if (statsSection) {
+                observer.observe(statsSection);
+            }
+            
+            // Add smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case 'k':
+                            e.preventDefault();
+                            document.getElementById('chatInput').focus();
+                            break;
+                        case 'Enter':
+                            if (e.shiftKey) {
+                                e.preventDefault();
+                                canvasBuilder.deployCanvas();
+                            }
+                            break;
+                        case 'Backspace':
+                            if (e.shiftKey) {
+                                e.preventDefault();
+                                canvasBuilder.clearCanvas();
+                            }
+                            break;
+                    }
+                }
+            });
+            
+            // Add voice input capability (if supported)
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                // Add voice button to chat input
+                const voiceBtn = document.createElement('button');
+                voiceBtn.innerHTML = '🎤';
+                voiceBtn.className = 'voice-btn';
+                voiceBtn.style.cssText = `
+                    position: absolute;
+                    right: 50px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: rgba(0, 255, 159, 0.2);
+                    border: 1px solid rgba(0, 255, 159, 0.3);
+                    border-radius: 6px;
+                    width: 32px;
+                    height: 32px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                `;
+                
+                const inputWrapper = document.querySelector('.input-wrapper');
+                inputWrapper.style.position = 'relative';
+                inputWrapper.appendChild(voiceBtn);
+                
+                voiceBtn.addEventListener('click', () => {
+                    recognition.start();
+                    voiceBtn.style.background = 'rgba(255, 0, 0, 0.2)';
+                    voiceBtn.innerHTML = '🔴';
+                });
+                
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('chatInput').value = transcript;
+                    voiceBtn.style.background = 'rgba(0, 255, 159, 0.2)';
+                    voiceBtn.innerHTML = '🎤';
+                };
+                
+                recognition.onerror = () => {
+                    voiceBtn.style.background = 'rgba(0, 255, 159, 0.2)';
+                    voiceBtn.innerHTML = '🎤';
+                    Utils.showNotification('Voice recognition error', 'error');
+                };
+            }
+            
+            // Add file upload capability
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.csv,.json,.xlsx,.txt';
+            fileInput.style.display = 'none';
+            document.body.appendChild(fileInput);
+            
+            // Add file upload button to canvas panel
+            const uploadBtn = document.createElement('button');
+            uploadBtn.className = 'action-btn tertiary';
+            uploadBtn.textContent = 'Upload Data';
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            
+            const canvasActions = document.querySelector('.canvas-actions');
+            canvasActions.insertBefore(uploadBtn, canvasActions.firstChild);
+            
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    handleFileUpload(file);
+                }
+            });
+            
+            // File upload handler
+            function handleFileUpload(file) {
+                Utils.showNotification(`Processing ${file.name}...`, 'info');
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        let data;
+                        if (file.name.endsWith('.json')) {
+                            data = JSON.parse(e.target.result);
+                        } else if (file.name.endsWith('.csv')) {
+                            data = parseCSV(e.target.result);
+                        } else {
+                            data = e.target.result;
+                        }
+                        
+                        // Create data visualization component
+                        const dataComponent = {
+                            icon: '📊',
+                            title: `Data Analysis: ${file.name}`,
+                            type: 'Data Visualization',
+                            metrics: [
+                                { label: 'Records Processed', value: Array.isArray(data) ? data.length.toString() : 'N/A', status: 'info' },
+                                { label: 'File Size', value: formatFileSize(file.size), status: 'success' },
+                                { label: 'Processing Time', value: '0.3s', status: 'success' }
+                            ],
+                            actions: ['Analyze', 'Visualize', 'Export'],
+                            hasChart: true
+                        };
+                        
+                        canvasBuilder.createCanvasItem(dataComponent);
+                        Utils.showNotification('Data uploaded and analyzed!', 'success');
+                    } catch (error) {
+                        Utils.showNotification('Error processing file', 'error');
+                    }
+                };
+                
+                if (file.type.includes('text') || file.name.endsWith('.csv') || file.name.endsWith('.json')) {
+                    reader.readAsText(file);
+                } else {
+                    reader.readAsArrayBuffer(file);
+                }
+            }
+            
+            function parseCSV(text) {
+                const lines = text.split('\n');
+                const headers = lines[0].split(',');
+                const data = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim()) {
+                        const values = lines[i].split(',');
+                        const row = {};
+                        headers.forEach((header, index) => {
+                            row[header.trim()] = values[index]?.trim() || '';
+                        });
+                        data.push(row);
+                    }
+                }
+                
+                return data;
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // Add drag and drop functionality
+            const dropZone = document.querySelector('.canvas-content');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.style.background = 'rgba(0, 255, 159, 0.1)';
+                    dropZone.style.borderColor = 'rgba(0, 255, 159, 0.5)';
+                });
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.style.background = '';
+                    dropZone.style.borderColor = '';
+                });
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+            
+            // Add export functionality
+            const exportBtn = document.createElement('button');
+            exportBtn.className = 'action-btn quaternary';
+            exportBtn.textContent = 'Export';
+            exportBtn.addEventListener('click', exportCanvas);
+            canvasActions.appendChild(exportBtn);
+            
+            function exportCanvas() {
+                if (AppState.canvasItems.length === 0) {
+                    Utils.showNotification('Nothing to export', 'warning');
+                    return;
+                }
+                
+                const exportData = {
+                    project: {
+                        title: document.getElementById('canvasTitle').textContent,
+                        created: new Date().toISOString(),
+                        items: AppState.canvasItems.map(item => item.config)
+                    },
+                    metadata: {
+                        version: '1.0.0',
+                        platform: 'NeuroSphere',
+                        totalComponents: AppState.canvasItems.length
+                    }
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                    type: 'application/json'
+                });
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `neurosphere-project-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                Utils.showNotification('Project exported successfully!', 'success');
+            }
+            
+            // Add fullscreen canvas mode
+            const fullscreenBtn = document.createElement('button');
+            fullscreenBtn.className = 'action-btn secondary';
+            fullscreenBtn.textContent = 'Fullscreen';
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            canvasActions.insertBefore(fullscreenBtn, canvasActions.lastChild);
+            
+            function toggleFullscreen() {
+                const canvasPanel = document.querySelector('.canvas-panel');
+                if (!document.fullscreenElement) {
+                    canvasPanel.requestFullscreen().then(() => {
+                        fullscreenBtn.textContent = 'Exit Fullscreen';
+                        canvasPanel.style.borderRadius = '0';
+                    });
+                } else {
+                    document.exitFullscreen().then(() => {
+                        fullscreenBtn.textContent = 'Fullscreen';
+                        canvasPanel.style.borderRadius = '16px';
+                    });
+                }
+            }
+            
+            // Add performance monitoring
+            const performanceMonitor = {
+                startTime: performance.now(),
+                metrics: {
+                    componentsRendered: 0,
+                    chartsCreated: 0,
+                    userInteractions: 0
+                },
+                
+                track(event, data = {}) {
+                    this.metrics[event] = (this.metrics[event] || 0) + 1;
+                    console.log(`[Performance] ${event}:`, data);
+                },
+                
+                getStats() {
+                    return {
+                        ...this.metrics,
+                        uptime: Math.round((performance.now() - this.startTime) / 1000),
+                        memoryUsage: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB' : 'N/A'
+                    };
+                }
+            };
+            
+            // Expose performance monitor globally for debugging
+            window.performanceMonitor = performanceMonitor;
+            
+            // Track initial load
+            performanceMonitor.track('applicationLoaded', {
+                loadTime: performance.now(),
+                userAgent: navigator.userAgent
+            });
+            
+            // Add analytics event tracking
+            function trackEvent(category, action, label = '', value = 0) {
+                // This would integrate with actual analytics services
+                console.log('[Analytics]', { category, action, label, value, timestamp: new Date() });
+                performanceMonitor.track('userInteractions');
+            }
+            
+            // Track user interactions
+            document.addEventListener('click', (e) => {
+                if (e.target.matches('.action-btn, .item-action, .quick-prompt, .send-btn')) {
+                    trackEvent('interaction', 'click', e.target.textContent.trim());
+                }
+            });
+            
+            // Add context menu for canvas items
+            document.addEventListener('contextmenu', (e) => {
+                if (e.target.closest('.canvas-item')) {
+                    e.preventDefault();
+                    showContextMenu(e.target.closest('.canvas-item'), e.clientX, e.clientY);
+                }
+            });
+            
+            function showContextMenu(item, x, y) {
+                // Remove existing context menu
+                const existingMenu = document.querySelector('.context-menu');
+                if (existingMenu) {
+                    existingMenu.remove();
+                }
+                
+                const menu = document.createElement('div');
+                menu.className = 'context-menu';
+                menu.style.cssText = `
+                    position: fixed;
+                    top: ${y}px;
+                    left: ${x}px;
+                    background: var(--glass-bg);
+                    border: 1px solid var(--glass-border);
+                    border-radius: 8px;
+                    backdrop-filter: blur(20px);
+                    z-index: 10000;
+                    min-width: 150px;
+                    padding: 8px 0;
+                `;
+                
+                const menuItems = [
+                    { text: 'Edit Component', action: () => editComponent(item) },
+                    { text: 'Duplicate', action: () => duplicateComponent(item) },
+                    { text: 'Move Up', action: () => moveComponent(item, 'up') },
+                    { text: 'Move Down', action: () => moveComponent(item, 'down') },
+                    { text: 'Delete', action: () => deleteComponent(item) }
+                ];
+                
+                menuItems.forEach(menuItem => {
+                    const menuBtn = document.createElement('button');
+                    menuBtn.textContent = menuItem.text;
+                    menuBtn.style.cssText = `
+                        width: 100%;
+                        padding: 8px 16px;
+                        background: none;
+                        border: none;
+                        color: var(--text-primary);
+                        text-align: left;
+                        cursor: pointer;
+                        transition: background 0.2s ease;
+                    `;
+                    menuBtn.addEventListener('click', () => {
+                        menuItem.action();
+                        menu.remove();
+                    });
+                    menuBtn.addEventListener('mouseover', () => {
+                        menuBtn.style.background = 'rgba(0, 255, 159, 0.1)';
+                    });
+                    menuBtn.addEventListener('mouseout', () => {
+                        menuBtn.style.background = 'none';
+                    });
+                    menu.appendChild(menuBtn);
+                });
+                
+                document.body.appendChild(menu);
+                
+                // Remove menu on click outside
+                setTimeout(() => {
+                    document.addEventListener('click', () => {
+                        if (menu.parentNode) {
+                            menu.remove();
+                        }
+                    }, { once: true });
+                }, 100);
+            }
+            
+            function editComponent(item) {
+                Utils.showNotification('Component editor would open here', 'info');
+                trackEvent('canvas', 'edit_component');
+            }
+            
+            function duplicateComponent(item) {
+                const itemData = AppState.canvasItems.find(i => i.id === item.id);
+                if (itemData) {
+                    const duplicatedConfig = { ...itemData.config };
+                    duplicatedConfig.title = duplicatedConfig.title + ' (Copy)';
+                    canvasBuilder.createCanvasItem(duplicatedConfig);
+                    Utils.showNotification('Component duplicated', 'success');
+                    trackEvent('canvas', 'duplicate_component');
+                }
+            }
+            
+            function moveComponent(item, direction) {
+                const grid = document.getElementById('canvasGrid');
+                const items = Array.from(grid.children);
+                const currentIndex = items.indexOf(item);
+                
+                if (direction === 'up' && currentIndex > 0) {
+                    grid.insertBefore(item, items[currentIndex - 1]);
+                } else if (direction === 'down' && currentIndex < items.length - 1) {
+                    grid.insertBefore(items[currentIndex + 1], item);
+                }
+                
+                Utils.showNotification(`Component moved ${direction}`, 'info');
+                trackEvent('canvas', `move_component_${direction}`);
+            }
+            
+            function deleteComponent(item) {
+                item.style.animation = 'messageAppear 0.3s ease-out reverse';
+                setTimeout(() => {
+                    item.remove();
+                    AppState.canvasItems = AppState.canvasItems.filter(i => i.id !== item.id);
+                    Utils.showNotification('Component deleted', 'info');
+                    trackEvent('canvas', 'delete_component');
+                }, 300);
+            }
+            
+            // Add keyboard shortcuts help
+            const helpBtn = document.createElement('button');
+            helpBtn.textContent = '?';
+            helpBtn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
+                color: var(--text-primary);
+                font-size: 18px;
+                font-weight: 700;
+                cursor: pointer;
+                backdrop-filter: blur(20px);
+                z-index: 1000;
+                transition: all 0.3s ease;
+            `;
+            
+            helpBtn.addEventListener('click', showKeyboardShortcuts);
+            helpBtn.addEventListener('mouseover', () => {
+                helpBtn.style.transform = 'scale(1.1)';
+                helpBtn.style.boxShadow = '0 8px 25px rgba(0, 255, 159, 0.3)';
+            });
+            helpBtn.addEventListener('mouseout', () => {
+                helpBtn.style.transform = 'scale(1)';
+                helpBtn.style.boxShadow = 'none';
+            });
+            
+            document.body.appendChild(helpBtn);
+            
+            function showKeyboardShortcuts() {
+                const shortcuts = [
+                    { keys: 'Ctrl/Cmd + K', description: 'Focus chat input' },
+                    { keys: 'Ctrl/Cmd + Shift + Enter', description: 'Deploy canvas' },
+                    { keys: 'Ctrl/Cmd + Shift + Backspace', description: 'Clear canvas' },
+                    { keys: 'Right-click on component', description: 'Component context menu' },
+                    { keys: 'Drag & drop files', description: 'Upload data files' }
+                ];
+                
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10001;
+                `;
+                
+                const content = document.createElement('div');
+                content.style.cssText = `
+                    background: var(--glass-bg);
+                    border: 1px solid var(--glass-border);
+                    border-radius: 16px;
+                    backdrop-filter: blur(20px);
+                    padding: 32px;
+                    max-width: 500px;
+                    width: 90%;
+                `;
+                
+                let html = '<h3 style="color: var(--text-primary); margin-bottom: 20px; font-size: 24px;">Keyboard Shortcuts</h3>';
+                shortcuts.forEach(shortcut => {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                            <code style="background: rgba(0, 255, 159, 0.1); padding: 4px 8px; border-radius: 4px; color: var(--aurora-green);">${shortcut.keys}</code>
+                            <span style="color: var(--text-secondary);">${shortcut.description}</span>
+                        </div>
+                    `;
+                });
+                
+                content.innerHTML = html;
+                modal.appendChild(content);
+                document.body.appendChild(modal);
+                
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                });
+                
+                trackEvent('help', 'show_shortcuts');
+            }
+            
+            // Initialize welcome message
+            setTimeout(() => {
+                Utils.showNotification('Welcome to NeuroSphere! Try the voice input or drag & drop files.', 'info', 5000);
+            }, 2000);
+            
+            console.log('🚀 NeuroSphere Advanced Platform Initialized Successfully!');
+            console.log('Performance Stats:', performanceMonitor.getStats());
+        });
+    </script>
+</body>
+</html>

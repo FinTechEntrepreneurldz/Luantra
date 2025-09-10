@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/settings.json.backup
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp

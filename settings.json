@@ -1,0 +1,22 @@
+{
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "files.associations": {
+    "*.html": "html"
+  },
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.donotVerifyTags": true,
+  "liveServer.settings.CustomBrowser": "chrome",
+  "liveServer.settings.port": 3000,
+  "html.format.indentInnerHtml": true,
+  "css.validate": true,
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": true,
+  "workbench.iconTheme": "material-icon-theme"
+}
