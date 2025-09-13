@@ -4,9 +4,6 @@ on:
   push:
     branches: [ main ]
     paths: [ 'backend/**' ]
-  pull_request:
-    branches: [ main ]
-    paths: [ 'backend/**' ]
 
 env:
   PROJECT_ID: luantra-production
@@ -27,42 +24,20 @@ jobs:
         service_account_key: ${{ secrets.GOOGLE_CLOUD_KEY }}
         project_id: ${{ env.PROJECT_ID }}
 
-    - name: Configure Docker to use gcloud as credential helper
-      run: |
-        gcloud auth configure-docker
-
-    - name: Build Docker image
+    - name: Build and Deploy with Cloud Build
       run: |
         cd backend
-        docker build -t gcr.io/$PROJECT_ID/$SERVICE:$GITHUB_SHA .
-        docker tag gcr.io/$PROJECT_ID/$SERVICE:$GITHUB_SHA gcr.io/$PROJECT_ID/$SERVICE:latest
-
-    - name: Push Docker image to GCR
-      run: |
-        docker push gcr.io/$PROJECT_ID/$SERVICE:$GITHUB_SHA
-        docker push gcr.io/$PROJECT_ID/$SERVICE:latest
-
-    - name: Deploy to Cloud Run
-      run: |
+        gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE
         gcloud run deploy $SERVICE \
-          --image gcr.io/$PROJECT_ID/$SERVICE:$GITHUB_SHA \
+          --image gcr.io/$PROJECT_ID/$SERVICE \
           --platform managed \
           --region $REGION \
           --allow-unauthenticated \
           --set-env-vars="ENVIRONMENT=production,GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
-          --cpu=2 \
-          --memory=4Gi \
-          --timeout=300 \
-          --max-instances=100 \
-          --port=8080
+          --memory=2Gi \
+          --timeout=300
 
     - name: Get service URL
       run: |
         SERVICE_URL=$(gcloud run services describe $SERVICE --region=$REGION --format='value(status.url)')
-        echo "Service deployed to: $SERVICE_URL"
-        echo "API_URL=$SERVICE_URL" >> $GITHUB_ENV
-
-    - name: Test deployment
-      run: |
-        sleep 30
-        curl -f $API_URL/health || echo "Health check failed"
+        echo "🚀 Backend deployed to: $SERVICE_URL"
