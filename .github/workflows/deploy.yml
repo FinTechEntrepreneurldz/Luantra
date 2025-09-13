@@ -18,13 +18,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Google Cloud CLI
-      uses: google-github-actions/setup-gcloud@v1
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
       with:
-        service_account_key: ${{ secrets.GOOGLE_CLOUD_KEY }}
+        credentials_json: ${{ secrets.GOOGLE_CLOUD_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
         project_id: ${{ env.PROJECT_ID }}
 
-    - name: Build and Deploy with Cloud Build
+    - name: Configure Docker for GCR
+      run: gcloud auth configure-docker gcr.io
+
+    - name: Build and Deploy
       run: |
         cd backend
         gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE
