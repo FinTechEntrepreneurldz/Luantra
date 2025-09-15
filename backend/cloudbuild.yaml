@@ -10,7 +10,16 @@ steps:
   
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
-    args: ['run', 'deploy', 'luantra-backend', '--image', 'gcr.io/$PROJECT_ID/luantra-backend', '--region', 'us-central1', '--allow-unauthenticated']
+    args:
+    - 'run'
+    - 'deploy'
+    - 'luantra-backend'
+    - '--image=gcr.io/$PROJECT_ID/luantra-backend'
+    - '--region=us-central1'
+    - '--platform=managed'
+    - '--allow-unauthenticated'
+    - '--memory=512Mi'
+    - '--port=8080'
 
 images:
   - 'gcr.io/$PROJECT_ID/luantra-backend'
