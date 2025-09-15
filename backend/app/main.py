@@ -15,9 +15,7 @@ from config import settings
 from models import Base, User, Project, FileUpload
 
 # Database setup
-engine = create_engine(settings.DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
+from database import engine, SessionLocal
 def init_db():
     Base.metadata.create_all(bind=engine)
 
