@@ -9,18 +9,16 @@ steps:
     args: ['push', 'gcr.io/$PROJECT_ID/luantra-backend']
   
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+    entrypoint: 'bash'
     args:
-    - 'run'
-    - 'deploy'
-    - 'luantra-backend'
-    - '--image'
-    - 'gcr.io/$PROJECT_ID/luantra-backend'
-    - '--region'
-    - 'us-central1'
-    - '--platform'
-    - 'managed'
-    - '--allow-unauthenticated'
+    - '-c'
+    - |
+      gcloud run deploy luantra-backend \
+        --image gcr.io/$PROJECT_ID/luantra-backend \
+        --region us-central1 \
+        --platform managed \
+        --allow-unauthenticated \
+        --quiet
 
 images:
   - 'gcr.io/$PROJECT_ID/luantra-backend'
