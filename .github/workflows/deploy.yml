@@ -28,23 +28,42 @@ jobs:
       with:
         project_id: ${{ env.PROJECT_ID }}
 
-    - name: Configure Docker for GCR
-      run: gcloud auth configure-docker gcr.io
-
-    - name: Build and Deploy
+    - name: Build and Deploy (with error handling)
       run: |
         cd backend
-        gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE
+        
+        # Submit build without waiting for logs
+        BUILD_ID=$(gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE --format="value(id)")
+        echo "Build ID: $BUILD_ID"
+        
+        # Wait for build to complete
+        while true; do
+          STATUS=$(gcloud builds describe $BUILD_ID --format="value(status)")
+          echo "Build status: $STATUS"
+          if [ "$STATUS" = "SUCCESS" ]; then
+            echo "Build completed successfully"
+            break
+          elif [ "$STATUS" = "FAILURE" ] || [ "$STATUS" = "TIMEOUT" ] || [ "$STATUS" = "CANCELLED" ]; then
+            echo "Build failed with status: $STATUS"
+            exit 1
+          fi
+          sleep 10
+        done
+        
+        # Deploy the successful build
         gcloud run deploy $SERVICE \
           --image gcr.io/$PROJECT_ID/$SERVICE \
           --platform managed \
           --region $REGION \
           --allow-unauthenticated \
-          --set-env-vars="ENVIRONMENT=production,GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
-          --memory=2Gi \
+          --memory=1Gi \
           --timeout=300
 
     - name: Get service URL
       run: |
         SERVICE_URL=$(gcloud run services describe $SERVICE --region=$REGION --format='value(status.url)')
-        echo "🚀 Backend deployed to: $SERVICE_URL"
+        echo "Backend deployed to: $SERVICE_URL"
+        
+        # Test the deployment
+        sleep 30
+        curl -f "$SERVICE_URL/health" || echo "Health check failed"
