@@ -1,3 +1,3 @@
-name,revenue,employees
-TechCorp,2500000,450
-DataCorp,1800000,320
+id,name,revenue
+1,Company A,100000
+2,Company B,200000
