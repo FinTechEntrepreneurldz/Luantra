@@ -12,6 +12,12 @@ import pandas as pd
 import numpy as np
 from io import StringIO
 import random
+from google.cloud import aiplatform
+from google.cloud import storage
+import pandas as pd
+import json
+import os
+from datetime import datetime
 
 app = FastAPI(title="Luantra AI Platform", version="2.0.0")
 
@@ -1238,6 +1244,180 @@ def platform_status():
         },
         "timestamp": datetime.now().isoformat()
     }
+    
+# Initialize Vertex AI
+PROJECT_ID = "luantra-production"
+REGION = "us-central1"
+BUCKET_NAME = "luantra-ml-datasets"
+
+aiplatform.init(project=PROJECT_ID, location=REGION)
+
+# Real file upload with analysis
+@app.post("/api/v1/upload")
+async def upload_real_file(file: UploadFile = File(...)):
+    try:
+        # Read actual file content
+        content = await file.read()
+        
+        # Parse CSV/JSON
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(io.StringIO(content.decode('utf-8')))
+        elif file.filename.endswith('.json'):
+            df = pd.read_json(io.StringIO(content.decode('utf-8')))
+        else:
+            raise HTTPException(400, "Unsupported file type")
+
+        # Upload to Cloud Storage
+        storage_client = storage.Client(project=PROJECT_ID)
+        bucket = storage_client.bucket(BUCKET_NAME)
+        blob_name = f"datasets/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+        blob = bucket.blob(blob_name)
+        blob.upload_from_string(content, content_type='text/csv')
+
+        # Real data analysis
+        analysis = {
+            "row_count": len(df),
+            "column_count": len(df.columns),
+            "columns": df.columns.tolist(),
+            "dtypes": df.dtypes.to_dict(),
+            "missing_values": df.isnull().sum().to_dict(),
+            "data_quality_score": calculate_data_quality(df),
+            "ml_readiness": assess_ml_readiness(df),
+            "preview": df.head(5).to_dict('records')
+        }
+
+        file_record = {
+            "file_id": blob_name,
+            "filename": file.filename,
+            "gcs_path": f"gs://{BUCKET_NAME}/{blob_name}",
+            "analysis": analysis,
+            "uploaded_at": datetime.now().isoformat()
+        }
+
+        return file_record
+
+    except Exception as e:
+        raise HTTPException(500, f"File processing failed: {str(e)}")
+
+def calculate_data_quality(df):
+    """Calculate real data quality score"""
+    total_cells = df.size
+    missing_cells = df.isnull().sum().sum()
+    completeness = 1 - (missing_cells / total_cells)
+    
+    # Add more quality metrics
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    consistency = len(numeric_cols) / len(df.columns) if len(df.columns) > 0 else 0
+    
+    quality_score = (completeness * 0.7 + consistency * 0.3) * 100
+    return round(quality_score, 1)
+
+def assess_ml_readiness(df):
+    """Assess ML readiness of dataset"""
+    readiness_factors = {
+        "sufficient_rows": len(df) >= 100,
+        "sufficient_features": len(df.columns) >= 3,
+        "low_missing_data": (df.isnull().sum().sum() / df.size) < 0.3,
+        "numeric_features": len(df.select_dtypes(include=[np.number]).columns) > 0
+    }
+    
+    readiness_score = sum(readiness_factors.values()) / len(readiness_factors) * 100
+    return round(readiness_score, 1)
+
+# Real model training
+@app.post("/api/v1/train")
+async def train_vertex_model(request: dict):
+    try:
+        file_id = request["file_id"]
+        target_column = request["target_column"] 
+        model_name = request["model_name"]
+        problem_type = request["problem_type"]
+
+        # Create Vertex AI training job
+        job = aiplatform.AutoMLTabularTrainingJob(
+            display_name=f"{model_name}-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+            optimization_prediction_type=problem_type,
+            optimization_objective="minimize-log-loss" if problem_type == "classification" else "minimize-rmse"
+        )
+
+        # Create dataset from uploaded file
+        dataset = aiplatform.TabularDataset.create(
+            display_name=f"{model_name}-dataset",
+            gcs_source=f"gs://{BUCKET_NAME}/{file_id}"
+        )
+
+        # Start training
+        model = job.run(
+            dataset=dataset,
+            target_column=target_column,
+            training_fraction_split=0.8,
+            validation_fraction_split=0.1,
+            test_fraction_split=0.1,
+            budget_milli_node_hours=1000,  # 1 hour
+            model_display_name=model_name
+        )
+
+        return {
+            "job_id": job.resource_name,
+            "model_id": model.resource_name if model else None,
+            "status": "RUNNING",
+            "estimated_duration_minutes": 60
+        }
+
+    except Exception as e:
+        raise HTTPException(500, f"Training failed: {str(e)}")
+
+# Real training status
+@app.get("/api/v1/training/{job_id}/status")
+async def get_real_training_status(job_id: str):
+    try:
+        job = aiplatform.AutoMLTabularTrainingJob.get(job_id)
+        
+        return {
+            "job_id": job_id,
+            "state": job.state.name,
+            "progress_percentage": getattr(job, 'progress_percentage', 0),
+            "start_time": job.start_time.isoformat() if job.start_time else None,
+            "end_time": job.end_time.isoformat() if job.end_time else None,
+            "model_id": job.model_name if hasattr(job, 'model_name') else None
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Status check failed: {str(e)}")
+
+# Real model deployment
+@app.post("/api/v1/deploy")
+async def deploy_vertex_model(request: dict):
+    try:
+        model_id = request["model_id"]
+        endpoint_name = request["endpoint_name"]
+        
+        model = aiplatform.Model.get(model_id)
+        
+        # Create endpoint
+        endpoint = aiplatform.Endpoint.create(
+            display_name=endpoint_name,
+            project=PROJECT_ID,
+            location=REGION
+        )
+        
+        # Deploy model to endpoint
+        deployed_model = endpoint.deploy(
+            model=model,
+            deployed_model_display_name=endpoint_name,
+            machine_type="n1-standard-4",
+            min_replica_count=1,
+            max_replica_count=10
+        )
+        
+        return {
+            "endpoint_id": endpoint.resource_name,
+            "prediction_url": f"https://{REGION}-aiplatform.googleapis.com/v1/{endpoint.resource_name}:predict",
+            "state": "DEPLOYED",
+            "machine_type": "n1-standard-4"
+        }
+        
+    except Exception as e:
+        raise HTTPException(500, f"Deployment failed: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
