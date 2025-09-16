@@ -14,9 +14,6 @@ from io import StringIO
 import random
 from google.cloud import aiplatform
 from google.cloud import storage
-import json
-import os
-from datetime import datetime
 
 app = FastAPI(title="Luantra AI Platform", version="2.0.0")
 
@@ -1251,53 +1248,6 @@ BUCKET_NAME = "luantra-ml-datasets"
 
 aiplatform.init(project=PROJECT_ID, location=REGION)
 
-# Real file upload with analysis
-@app.post("/api/v1/upload")
-async def upload_real_file(file: UploadFile = File(...)):
-    try:
-        # Read actual file content
-        content = await file.read()
-        
-        # Parse CSV/JSON
-        if file.filename.endswith('.csv'):
-            df = pd.read_csv(io.StringIO(content.decode('utf-8')))
-        elif file.filename.endswith('.json'):
-            df = pd.read_json(io.StringIO(content.decode('utf-8')))
-        else:
-            raise HTTPException(400, "Unsupported file type")
-
-        # Upload to Cloud Storage
-        storage_client = storage.Client(project=PROJECT_ID)
-        bucket = storage_client.bucket(BUCKET_NAME)
-        blob_name = f"datasets/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-        blob = bucket.blob(blob_name)
-        blob.upload_from_string(content, content_type='text/csv')
-
-        # Real data analysis
-        analysis = {
-            "row_count": len(df),
-            "column_count": len(df.columns),
-            "columns": df.columns.tolist(),
-            "dtypes": df.dtypes.to_dict(),
-            "missing_values": df.isnull().sum().to_dict(),
-            "data_quality_score": calculate_data_quality(df),
-            "ml_readiness": assess_ml_readiness(df),
-            "preview": df.head(5).to_dict('records')
-        }
-
-        file_record = {
-            "file_id": blob_name,
-            "filename": file.filename,
-            "gcs_path": f"gs://{BUCKET_NAME}/{blob_name}",
-            "analysis": analysis,
-            "uploaded_at": datetime.now().isoformat()
-        }
-
-        return file_record
-
-    except Exception as e:
-        raise HTTPException(500, f"File processing failed: {str(e)}")
-
 def calculate_data_quality(df):
     """Calculate real data quality score"""
     total_cells = df.size
@@ -1418,49 +1368,6 @@ async def deploy_vertex_model(request: dict):
     except Exception as e:
         raise HTTPException(500, f"Deployment failed: {str(e)}")
         
-# Add the upload endpoint
-@app.post("/api/v1/upload")
-async def upload_file(file: UploadFile = File(...)):
-    try:
-        # Read file content
-        content = await file.read()
-        
-        # Process based on file type
-        if file.filename.endswith('.csv'):
-            df = pd.read_csv(io.StringIO(content.decode('utf-8')))
-        elif file.filename.endswith('.json'):
-            df = pd.read_json(io.StringIO(content.decode('utf-8')))
-        elif file.filename.endswith('.xlsx'):
-            df = pd.read_excel(io.BytesIO(content))
-        else:
-            raise HTTPException(400, "Unsupported file type")
-
-        # Analyze the data
-        analysis = {
-            "row_count": len(df),
-            "column_count": len(df.columns),
-            "columns": df.columns.tolist(),
-            "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
-            "missing_values": df.isnull().sum().to_dict(),
-            "data_quality_score": calculate_data_quality(df),
-            "ml_readiness": assess_ml_readiness(df),
-            "preview": df.head(5).to_dict('records') if len(df) > 0 else []
-        }
-
-        # Store file info
-        file_id = f"file_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-        file_record = {
-            "file_id": file_id,
-            "filename": file.filename,
-            "analysis": analysis,
-            "uploaded_at": datetime.now().isoformat()
-        }
-
-        return file_record
-
-    except Exception as e:
-        raise HTTPException(500, f"File processing failed: {str(e)}")
-
 def calculate_data_quality(df):
     """Calculate data quality score"""
     if df.empty:
