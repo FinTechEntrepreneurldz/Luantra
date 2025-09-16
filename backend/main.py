@@ -14,7 +14,6 @@ from io import StringIO
 import random
 from google.cloud import aiplatform
 from google.cloud import storage
-import pandas as pd
 import json
 import os
 from datetime import datetime
@@ -1418,6 +1417,80 @@ async def deploy_vertex_model(request: dict):
         
     except Exception as e:
         raise HTTPException(500, f"Deployment failed: {str(e)}")
+        
+# Add the upload endpoint
+@app.post("/api/v1/upload")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        # Read file content
+        content = await file.read()
+        
+        # Process based on file type
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(io.StringIO(content.decode('utf-8')))
+        elif file.filename.endswith('.json'):
+            df = pd.read_json(io.StringIO(content.decode('utf-8')))
+        elif file.filename.endswith('.xlsx'):
+            df = pd.read_excel(io.BytesIO(content))
+        else:
+            raise HTTPException(400, "Unsupported file type")
+
+        # Analyze the data
+        analysis = {
+            "row_count": len(df),
+            "column_count": len(df.columns),
+            "columns": df.columns.tolist(),
+            "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
+            "missing_values": df.isnull().sum().to_dict(),
+            "data_quality_score": calculate_data_quality(df),
+            "ml_readiness": assess_ml_readiness(df),
+            "preview": df.head(5).to_dict('records') if len(df) > 0 else []
+        }
+
+        # Store file info
+        file_id = f"file_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+        file_record = {
+            "file_id": file_id,
+            "filename": file.filename,
+            "analysis": analysis,
+            "uploaded_at": datetime.now().isoformat()
+        }
+
+        return file_record
+
+    except Exception as e:
+        raise HTTPException(500, f"File processing failed: {str(e)}")
+
+def calculate_data_quality(df):
+    """Calculate data quality score"""
+    if df.empty:
+        return 0
+    
+    total_cells = df.size
+    missing_cells = df.isnull().sum().sum()
+    completeness = 1 - (missing_cells / total_cells) if total_cells > 0 else 0
+    
+    # Additional quality checks
+    numeric_cols = len(df.select_dtypes(include=['number']).columns)
+    consistency = numeric_cols / len(df.columns) if len(df.columns) > 0 else 0
+    
+    quality_score = (completeness * 0.7 + consistency * 0.3) * 100
+    return round(quality_score, 1)
+
+def assess_ml_readiness(df):
+    """Assess ML readiness"""
+    if df.empty:
+        return 0
+        
+    readiness_factors = {
+        "sufficient_rows": len(df) >= 50,
+        "sufficient_features": len(df.columns) >= 2,
+        "low_missing_data": (df.isnull().sum().sum() / df.size) < 0.5 if df.size > 0 else False,
+        "has_numeric": len(df.select_dtypes(include=['number']).columns) > 0
+    }
+    
+    readiness_score = sum(readiness_factors.values()) / len(readiness_factors) * 100
+    return round(readiness_score, 1)
 
 if __name__ == "__main__":
     import uvicorn
