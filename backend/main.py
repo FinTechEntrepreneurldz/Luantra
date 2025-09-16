@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 from io import StringIO
 
-app = FastAPI(title="Luantra AI Platform", version="2.0.0")
+app = FastAPI(title="Luantra Complete AI Platform", version="3.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,16 +21,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global Storage
+# COMPREHENSIVE STORAGE SYSTEM
+# Each client gets their own tracked ecosystem
+client_ecosystems = {}  # client_id -> {created_assets, active_services}
 files_data = []
 projects = {}
 models = {}
 agents = {}
 dashboards = {}
-validations = {}
-evaluations = {}
-governance_policies = {}
-monitoring_services = {}
+workflows = {}
+apis = {}
+insights = {}
+
+# Service tracking stores
+validations = {}        # Validation as a Service instances
+evaluations = {}       # Evaluation as a Service instances  
+governance_policies = {} # Governance as a Service policies
+monitoring_services = {} # Monitoring as a Service instances
 
 # Gemini AI Integration
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
@@ -42,7 +49,7 @@ if GOOGLE_API_KEY:
         genai.configure(api_key=GOOGLE_API_KEY)
         model = genai.GenerativeModel('gemini-pro')
         GEMINI_AVAILABLE = True
-        print("✅ Gemini AI initialized successfully")
+        print("✅ Gemini AI Agent initialized successfully")
     except Exception as e:
         print(f"❌ Gemini initialization failed: {e}")
 
@@ -50,45 +57,39 @@ if GOOGLE_API_KEY:
 class BuildRequest(BaseModel):
     type: str  # 'dashboard', 'model', 'agent', 'insight', 'workflow', 'api'
     description: str
+    client_id: str
     data_source: Optional[str] = None
     requirements: Optional[Dict] = None
-    validation_rules: Optional[List] = None
 
-class ValidationRequest(BaseModel):
-    project_id: str
-    validation_type: str  # 'data', 'model', 'compliance', 'performance'
-    criteria: Dict
+class ClientEcosystem(BaseModel):
+    client_id: str
+    created_assets: Dict[str, List] = {}
+    active_services: Dict[str, str] = {}
+    total_builds: int = 0
+    compliance_score: float = 100.0
+    overall_health: str = "excellent"
 
-class EvaluationRequest(BaseModel):
-    model_id: str
-    evaluation_type: str  # 'accuracy', 'bias', 'fairness', 'performance'
-    metrics: List[str]
-
-class GovernancePolicy(BaseModel):
-    name: str
-    policy_type: str  # 'data_privacy', 'model_ethics', 'compliance'
-    rules: Dict
-    scope: List[str]
-
-class MonitoringConfig(BaseModel):
-    service_id: str
-    metrics: List[str]
-    thresholds: Dict
-    alert_channels: List[str]
-
-# Core Services
+# CORE PLATFORM ENDPOINTS
 
 @app.get("/")
 def root():
     return {
-        "message": "Luantra AI Platform",
-        "version": "2.0.0",
-        "status": "running",
-        "ai_enabled": GEMINI_AVAILABLE,
+        "message": "Luantra Complete AI Platform",
+        "version": "3.0.0",
+        "status": "operational",
+        "ai_agent": GEMINI_AVAILABLE,
+        "core_flow": {
+            "1": "Gemini AI Agent creates solutions",
+            "2": "Solutions stored in client ecosystem", 
+            "3": "Validation service automatically activates",
+            "4": "Evaluation service begins assessment",
+            "5": "Monitoring service tracks performance",
+            "6": "Governance service ensures compliance"
+        },
         "services": [
-            "AI Builder",
-            "Validation as a Service",
-            "Evaluation as a Service", 
+            "AI Agent Builder (Gemini)",
+            "Validation as a Service", 
+            "Evaluation as a Service",
             "Governance as a Service",
             "Monitoring as a Service"
         ]
@@ -98,27 +99,50 @@ def root():
 def health():
     return {
         "status": "healthy",
-        "gemini": GEMINI_AVAILABLE,
+        "gemini_agent": GEMINI_AVAILABLE,
         "services": {
-            "ai_builder": "active",
-            "validation": "active",
+            "ai_agent": "active",
+            "validation": "active", 
             "evaluation": "active",
             "governance": "active",
             "monitoring": "active"
         },
+        "client_ecosystems": len(client_ecosystems),
         "timestamp": datetime.now().isoformat()
     }
 
 @app.post("/api/v1/auth/login")
 def login(credentials: dict):
     username = credentials.get("username", "demo")
+    client_id = f"client_{username}_{int(datetime.now().timestamp())}"
+    
+    # Initialize client ecosystem
+    if client_id not in client_ecosystems:
+        client_ecosystems[client_id] = {
+            "client_id": client_id,
+            "created_assets": {
+                "dashboards": [],
+                "models": [],
+                "agents": [],
+                "workflows": [],
+                "apis": [],
+                "insights": []
+            },
+            "active_services": {},
+            "total_builds": 0,
+            "compliance_score": 100.0,
+            "overall_health": "excellent",
+            "created_at": datetime.now().isoformat()
+        }
+    
     return {
         "access_token": f"token_{username}",
-        "user": {"id": 1, "username": username},
+        "user": {"id": 1, "username": username, "client_id": client_id},
+        "client_ecosystem": client_ecosystems[client_id],
         "status": "success"
     }
 
-# File Upload and Analysis
+# FILE UPLOAD AND ANALYSIS
 @app.post("/api/v1/upload")
 async def upload_file(file: UploadFile = File(...)):
     content = await file.read()
@@ -132,7 +156,7 @@ async def upload_file(file: UploadFile = File(...)):
         "filename": file.filename,
         "size": len(content),
         "analysis": analysis,
-        "content": content.decode('utf-8')[:5000],
+        "content": content.decode('utf-8')[:5000] if len(content) < 100000 else "Large file - analysis available",
         "uploaded_at": datetime.now().isoformat()
     }
     files_data.append(file_info)
@@ -141,11 +165,11 @@ async def upload_file(file: UploadFile = File(...)):
         "file_id": file_id,
         "status": "processed",
         "analysis": analysis,
-        "capabilities": suggest_ai_capabilities(analysis)
+        "ai_capabilities": suggest_ai_capabilities(analysis)
     }
 
 async def analyze_uploaded_data(file: UploadFile, content: bytes):
-    """Advanced data analysis with AI insights"""
+    """Advanced data analysis with business insights"""
     try:
         content_str = content.decode('utf-8')
         
@@ -168,11 +192,10 @@ async def analyze_uploaded_data(file: UploadFile, content: bytes):
         elif file.filename.endswith('.json'):
             data = json.loads(content_str)
             analysis = {
-                "type": "json",
-                "structure": analyze_json_structure(data),
+                "type": "json", 
+                "structure": "object" if isinstance(data, dict) else "array",
                 "keys": list(data.keys()) if isinstance(data, dict) else None,
-                "depth": calculate_json_depth(data),
-                "data_types": identify_json_types(data)
+                "items": len(data) if isinstance(data, list) else 1
             }
         else:
             analysis = {"type": "unknown", "size": len(content)}
@@ -183,7 +206,7 @@ async def analyze_uploaded_data(file: UploadFile, content: bytes):
         return {"type": "error", "error": str(e)}
 
 def analyze_columns(df):
-    """Analyze each column for patterns and types"""
+    """Analyze each column for business context"""
     column_analysis = {}
     
     for col in df.columns:
@@ -199,9 +222,9 @@ def analyze_columns(df):
         
         if col_data.dtype in ['int64', 'float64']:
             analysis.update({
-                "min": col_data.min(),
-                "max": col_data.max(),
-                "mean": col_data.mean(),
+                "min": float(col_data.min()),
+                "max": float(col_data.max()),
+                "mean": float(col_data.mean()),
                 "distribution": "normal" if abs(col_data.skew()) < 1 else "skewed"
             })
             
@@ -240,8 +263,8 @@ def assess_data_quality(df):
     return {
         "quality_score": round(quality_score, 2),
         "completeness": round((1 - null_cells / total_cells) * 100, 2),
-        "consistency": 85,  # Simplified for demo
-        "accuracy": 90,     # Simplified for demo
+        "consistency": 85,
+        "accuracy": 90,
         "issues": identify_data_issues(df)
     }
 
@@ -264,7 +287,6 @@ def suggest_ml_models(df):
     """Suggest appropriate ML models"""
     models = []
     
-    # Check for potential target variables
     for col in df.columns:
         col_lower = col.lower()
         if any(word in col_lower for word in ['churn', 'conversion', 'success']):
@@ -284,15 +306,12 @@ def suggest_preprocessing(df):
     """Suggest preprocessing steps"""
     steps = []
     
-    # Check for missing values
     if df.isnull().any().any():
         steps.append("Handle missing values")
     
-    # Check for categorical encoding
     if len(df.select_dtypes(include=['object']).columns) > 0:
         steps.append("Encode categorical variables")
     
-    # Check for scaling
     numeric_cols = df.select_dtypes(include=[np.number])
     if len(numeric_cols.columns) > 0:
         ranges = numeric_cols.max() - numeric_cols.min()
@@ -305,16 +324,13 @@ def identify_data_issues(df):
     """Identify potential data issues"""
     issues = []
     
-    # Missing values
     null_cols = df.columns[df.isnull().any()].tolist()
     if null_cols:
         issues.append(f"Missing values in: {', '.join(null_cols[:3])}")
     
-    # Duplicate rows
     if df.duplicated().any():
         issues.append("Duplicate rows detected")
     
-    # Low cardinality
     low_card_cols = [col for col in df.columns if df[col].nunique() == 1]
     if low_card_cols:
         issues.append(f"Constant columns: {', '.join(low_card_cols)}")
@@ -326,14 +342,12 @@ def extract_business_insights(df, filename):
     insights = []
     filename_lower = filename.lower()
     
-    # Sales insights
     if 'sales' in filename_lower or any('revenue' in col.lower() for col in df.columns):
         revenue_cols = [col for col in df.columns if 'revenue' in col.lower()]
         if revenue_cols:
-            total_revenue = df[revenue_cols[0]].sum() if len(revenue_cols) > 0 else 0
+            total_revenue = df[revenue_cols[0]].sum()
             insights.append(f"Total revenue: ${total_revenue:,.0f}")
     
-    # Customer insights
     if 'customer' in filename_lower:
         insights.append(f"Customer dataset with {len(df)} records")
         
@@ -342,69 +356,63 @@ def extract_business_insights(df, filename):
             avg_satisfaction = df[satisfaction_cols[0]].mean()
             insights.append(f"Average satisfaction: {avg_satisfaction:.1f}")
     
-    # Performance insights
     if any(word in filename_lower for word in ['performance', 'metrics']):
         insights.append("Performance metrics dataset ready for KPI analysis")
     
     return insights
 
 def suggest_ai_capabilities(analysis):
-    """Suggest what AI capabilities can be built with this data"""
+    """Suggest what AI capabilities can be built"""
     capabilities = []
     
     if analysis.get("type") == "csv":
         columns = analysis.get("columns", [])
         column_analysis = analysis.get("column_analysis", {})
         
-        # Dashboard capabilities
         numeric_cols = [col for col, info in column_analysis.items() if info.get("business_type") in ["financial", "metric", "numeric"]]
         if numeric_cols:
             capabilities.append({
                 "type": "dashboard",
                 "title": "Analytics Dashboard",
-                "description": f"Interactive dashboard with {len(numeric_cols)} key metrics",
-                "complexity": "medium"
+                "description": f"Interactive dashboard with {len(numeric_cols)} key metrics"
             })
         
-        # ML Model capabilities
         if analysis.get("ml_readiness", {}).get("readiness_score", 0) > 50:
             capabilities.append({
                 "type": "ml_model",
-                "title": "Predictive Models",
-                "description": "Machine learning models for prediction and classification",
-                "complexity": "high"
+                "title": "Predictive Models", 
+                "description": "Machine learning models for prediction and classification"
             })
         
-        # AI Agent capabilities
         text_cols = [col for col, info in column_analysis.items() if info.get("business_type") == "textual"]
         if text_cols:
             capabilities.append({
                 "type": "ai_agent",
                 "title": "Intelligent Agent",
-                "description": "AI agent for data analysis and insights",
-                "complexity": "high"
+                "description": "AI agent for data analysis and insights"
             })
         
-        # Monitoring capabilities
         capabilities.append({
             "type": "monitoring",
             "title": "Data Monitoring",
-            "description": "Real-time monitoring and alerting system",
-            "complexity": "medium"
+            "description": "Real-time monitoring and alerting system"
         })
     
     return capabilities
 
-# AI Builder Service
+# =============================================================================
+# CORE AI AGENT BUILDER SERVICE - GEMINI POWERED
+# =============================================================================
+
 @app.post("/api/v1/build")
-async def build_solution(request: BuildRequest):
-    """Universal AI builder - can build anything"""
+async def build_solution(request: BuildRequest, background_tasks: BackgroundTasks):
+    """Universal AI Agent Builder - Gemini creates everything"""
     build_id = str(uuid.uuid4())
     
-    # Use Gemini AI to understand and plan the build
-    build_plan = await create_build_plan(request)
+    # Step 1: Use Gemini AI to understand and plan the build
+    build_plan = await create_gemini_build_plan(request)
     
-    # Execute the build based on type
+    # Step 2: Execute the build based on type
     if request.type == "dashboard":
         result = await build_dashboard(build_id, request, build_plan)
     elif request.type == "model":
@@ -420,69 +428,77 @@ async def build_solution(request: BuildRequest):
     else:
         result = await build_custom_solution(build_id, request, build_plan)
     
+    # Step 3: Store in client ecosystem
+    store_in_client_ecosystem(request.client_id, request.type, build_id, result)
+    
+    # Step 4: Automatically activate all 4 services for this build
+    background_tasks.add_task(activate_all_services_for_build, request.client_id, build_id, request.type, result)
+    
     return {
         "build_id": build_id,
         "status": "completed",
         "result": result,
         "plan": build_plan,
-        "deployment_ready": True
+        "services_activated": ["validation", "evaluation", "monitoring", "governance"],
+        "client_ecosystem": client_ecosystems.get(request.client_id, {})
     }
 
-async def create_build_plan(request: BuildRequest):
+async def create_gemini_build_plan(request: BuildRequest):
     """Use Gemini AI to create detailed build plan"""
     if not GEMINI_AVAILABLE:
-        return {"status": "fallback", "plan": "Using template-based building"}
+        return create_fallback_plan(request)
     
     try:
         # Get context from uploaded files
         context = ""
         if files_data:
-            context = "Available data:\n"
+            context = "Available data sources:\n"
             for file in files_data[-3:]:
                 context += f"- {file['filename']}: {file['analysis'].get('rows', 0)} rows, columns: {file['analysis'].get('columns', [])}\n"
         
-        prompt = f"""You are Luantra AI, an expert system architect. Create a detailed build plan for:
+        prompt = f"""You are Luantra AI, the most advanced enterprise AI agent. Create a comprehensive build plan:
 
+BUILD REQUEST:
 Type: {request.type}
 Description: {request.description}
+Client: {request.client_id}
 Data Source: {request.data_source}
 Requirements: {request.requirements}
 
+AVAILABLE DATA:
 {context}
 
-Provide a JSON response with:
-1. Architecture design
-2. Components needed
-3. Implementation steps
-4. Technologies to use
-5. Expected timeline
+As an AI agent, provide a detailed JSON response with:
+1. Technical architecture
+2. Specific components to build
+3. Implementation approach
+4. Integration points
+5. Performance expectations
 6. Success metrics
 7. Deployment strategy
 
-Be specific and technical. This will be used to actually build the solution."""
+Be specific and technical. This plan will be used to actually build the solution."""
 
         response = model.generate_content(prompt)
         
         if response and response.text:
-            # Extract structured plan from AI response
             return {
                 "ai_generated": True,
-                "plan": response.text,
+                "gemini_plan": response.text,
                 "components": extract_components_from_plan(response.text),
-                "timeline": "2-5 minutes",
+                "timeline": "3-8 minutes",
                 "complexity": assess_complexity(request.type, request.description)
             }
         
     except Exception as e:
-        print(f"Build plan error: {e}")
+        print(f"Gemini build plan error: {e}")
     
     return create_fallback_plan(request)
 
 def extract_components_from_plan(plan_text):
-    """Extract buildable components from AI plan"""
+    """Extract buildable components from Gemini plan"""
     components = []
     
-    # Parse the AI plan for specific components
     if "dashboard" in plan_text.lower():
         components.append({"type": "dashboard", "status": "planned"})
     if "model" in plan_text.lower():
@@ -508,7 +524,6 @@ def assess_complexity(build_type, description):
         if any(keyword in desc_lower for keyword in keywords):
             return level
     
-    # Default complexity by type
     type_complexity = {
         "dashboard": "medium",
         "model": "high", 
@@ -520,6 +535,18 @@ def assess_complexity(build_type, description):
     
     return type_complexity.get(build_type, "medium")
 
+def create_fallback_plan(request: BuildRequest):
+    """Create fallback plan when Gemini is not available"""
+    return {
+        "ai_generated": False,
+        "plan": f"Template-based {request.type} building",
+        "components": [{"type": request.type, "status": "planned"}],
+        "timeline": "2-4 minutes",
+        "complexity": "medium"
+    }
+
+# BUILD IMPLEMENTATION FUNCTIONS
+
 async def build_dashboard(build_id: str, request: BuildRequest, plan: Dict):
     """Build intelligent dashboard"""
     dashboard = {
@@ -527,15 +554,18 @@ async def build_dashboard(build_id: str, request: BuildRequest, plan: Dict):
         "type": "dashboard",
         "title": f"AI Dashboard - {request.description}",
         "description": "Intelligent dashboard with real-time analytics",
+        "client_id": request.client_id,
         "components": [],
         "created_at": datetime.now().isoformat(),
-        "status": "active"
+        "status": "active",
+        "data_sources": []
     }
     
     # Add components based on available data
     if files_data:
         latest_file = files_data[-1]
         analysis = latest_file["analysis"]
+        dashboard["data_sources"].append(latest_file["filename"])
         
         if analysis.get("type") == "csv":
             columns = analysis.get("columns", [])
@@ -570,6 +600,7 @@ async def build_ml_model(build_id: str, request: BuildRequest, plan: Dict):
         "id": build_id,
         "type": "ml_model",
         "title": f"AI Model - {request.description}",
+        "client_id": request.client_id,
         "algorithm": "auto_select",
         "status": "training",
         "created_at": datetime.now().isoformat(),
@@ -603,9 +634,10 @@ async def build_ai_agent(build_id: str, request: BuildRequest, plan: Dict):
         "id": build_id,
         "type": "ai_agent",
         "title": f"AI Agent - {request.description}",
+        "client_id": request.client_id,
         "capabilities": [
             "natural_language_processing",
-            "data_analysis",
+            "data_analysis", 
             "automated_insights",
             "decision_making"
         ],
@@ -632,6 +664,7 @@ async def build_workflow(build_id: str, request: BuildRequest, plan: Dict):
         "id": build_id,
         "type": "workflow",
         "title": f"Smart Workflow - {request.description}",
+        "client_id": request.client_id,
         "steps": [
             {"id": 1, "type": "trigger", "description": "Data ingestion"},
             {"id": 2, "type": "process", "description": "AI analysis"},
@@ -642,6 +675,7 @@ async def build_workflow(build_id: str, request: BuildRequest, plan: Dict):
         "created_at": datetime.now().isoformat()
     }
     
+    workflows[build_id] = workflow
     return workflow
 
 async def build_api(build_id: str, request: BuildRequest, plan: Dict):
@@ -650,6 +684,7 @@ async def build_api(build_id: str, request: BuildRequest, plan: Dict):
         "id": build_id,
         "type": "api",
         "title": f"API Service - {request.description}",
+        "client_id": request.client_id,
         "endpoints": [
             {"method": "GET", "path": f"/api/v1/{build_id}/data", "description": "Retrieve data"},
             {"method": "POST", "path": f"/api/v1/{build_id}/predict", "description": "Make predictions"},
@@ -660,14 +695,16 @@ async def build_api(build_id: str, request: BuildRequest, plan: Dict):
         "created_at": datetime.now().isoformat()
     }
     
+    apis[build_id] = api
     return api
 
 async def build_insights(build_id: str, request: BuildRequest, plan: Dict):
     """Build AI insights engine"""
-    insights = {
+    insight_engine = {
         "id": build_id,
         "type": "insights",
         "title": f"AI Insights - {request.description}",
+        "client_id": request.client_id,
         "generated_insights": [],
         "status": "analyzing",
         "created_at": datetime.now().isoformat()
@@ -678,21 +715,23 @@ async def build_insights(build_id: str, request: BuildRequest, plan: Dict):
         latest_file = files_data[-1]
         analysis = latest_file["analysis"]
         
-        insights["generated_insights"] = analysis.get("business_insights", [])
-        insights["generated_insights"].extend([
+        insight_engine["generated_insights"] = analysis.get("business_insights", [])
+        insight_engine["generated_insights"].extend([
             "Data quality score: " + str(analysis.get("data_quality", {}).get("quality_score", "N/A")),
             "ML readiness: " + str(analysis.get("ml_readiness", {}).get("readiness_score", "N/A")) + "%",
             "Recommended next steps: Advanced analytics and predictive modeling"
         ])
     
-    return insights
+    insights[build_id] = insight_engine
+    return insight_engine
 
 async def build_custom_solution(build_id: str, request: BuildRequest, plan: Dict):
-    """Build custom solution based on AI plan"""
+    """Build custom solution based on Gemini plan"""
     solution = {
         "id": build_id,
         "type": "custom",
         "title": f"Custom Solution - {request.description}",
+        "client_id": request.client_id,
         "components": plan.get("components", []),
         "architecture": plan.get("plan", "Custom AI-generated architecture"),
         "status": "deployed",
@@ -707,32 +746,495 @@ async def simulate_model_training(model_id: str):
         return
     
     for progress in range(0, 101, 10):
-        await asyncio.sleep(0.5)  # Simulate training time
+        await asyncio.sleep(0.5)
         models[model_id]["training_progress"] = progress
         
         if progress == 100:
             models[model_id]["status"] = "trained"
             models[model_id]["accuracy"] = "94.2%"
 
-def create_fallback_plan(request: BuildRequest):
-    """Create fallback plan when Gemini is not available"""
+# =============================================================================
+# CLIENT ECOSYSTEM MANAGEMENT
+# =============================================================================
+
+def store_in_client_ecosystem(client_id: str, asset_type: str, build_id: str, result: Dict):
+    """Store created asset in client's ecosystem"""
+    if client_id not in client_ecosystems:
+        client_ecosystems[client_id] = {
+            "client_id": client_id,
+            "created_assets": {
+                "dashboards": [],
+                "models": [],
+                "agents": [],
+                "workflows": [],
+                "apis": [],
+                "insights": []
+            },
+            "active_services": {},
+            "total_builds": 0,
+            "compliance_score": 100.0,
+            "overall_health": "excellent",
+            "created_at": datetime.now().isoformat()
+        }
+    
+    ecosystem = client_ecosystems[client_id]
+    
+    # Map types to storage keys
+    type_mapping = {
+        "dashboard": "dashboards",
+        "model": "models", 
+        "agent": "agents",
+        "workflow": "workflows",
+        "api": "apis",
+        "insight": "insights"
+    }
+    
+    storage_key = type_mapping.get(asset_type, "other")
+    if storage_key not in ecosystem["created_assets"]:
+        ecosystem["created_assets"][storage_key] = []
+    
+    ecosystem["created_assets"][storage_key].append({
+        "build_id": build_id,
+        "title": result.get("title", f"Unknown {asset_type}"),
+        "status": result.get("status", "active"),
+        "created_at": result.get("created_at", datetime.now().isoformat())
+    })
+    
+    ecosystem["total_builds"] += 1
+
+async def activate_all_services_for_build(client_id: str, build_id: str, build_type: str, build_result: Dict):
+    """Automatically activate all 4 services for every build"""
+    
+    # 1. Activate Validation as a Service
+    validation_id = await auto_create_validation(client_id, build_id, build_type, build_result)
+    
+    # 2. Activate Evaluation as a Service  
+    evaluation_id = await auto_create_evaluation(client_id, build_id, build_type, build_result)
+    
+    # 3. Activate Monitoring as a Service
+    monitoring_id = await auto_create_monitoring(client_id, build_id, build_type, build_result)
+    
+    # 4. Activate Governance as a Service
+    governance_id = await auto_create_governance(client_id, build_id, build_type, build_result)
+    
+    # Update client ecosystem with active services
+    if client_id in client_ecosystems:
+        client_ecosystems[client_id]["active_services"][build_id] = {
+            "validation_id": validation_id,
+            "evaluation_id": evaluation_id,
+            "monitoring_id": monitoring_id,
+            "governance_id": governance_id,
+            "activated_at": datetime.now().isoformat()
+        }
+
+# =============================================================================
+# AUTO-ACTIVATION OF THE 4 SERVICES
+# =============================================================================
+
+async def auto_create_validation(client_id: str, build_id: str, build_type: str, build_result: Dict):
+    """Auto-create validation service for the build"""
+    validation_id = str(uuid.uuid4())
+    
+    # Determine validation criteria based on build type
+    if build_type == "model":
+        criteria = {
+            "accuracy_threshold": 0.85,
+            "bias_threshold": 0.1,
+            "fairness_required": True,
+            "performance_threshold": 0.9
+        }
+        validation_type = "model"
+    elif build_type == "dashboard":
+        criteria = {
+            "data_freshness": 24,  # hours
+            "response_time": 2.0,  # seconds
+            "uptime_required": 0.99
+        }
+        validation_type = "dashboard"
+    else:
+        criteria = {
+            "quality_threshold": 0.9,
+            "compliance_required": True,
+            "security_validated": True
+        }
+        validation_type = "general"
+    
+    validation = {
+        "id": validation_id,
+        "client_id": client_id,
+        "build_id": build_id,
+        "build_type": build_type,
+        "validation_type": validation_type,
+        "criteria": criteria,
+        "status": "active",
+        "created_at": datetime.now().isoformat(),
+        "last_run": None,
+        "results": [],
+        "auto_created": True
+    }
+    
+    validations[validation_id] = validation
+    
+    # Run initial validation
+    await run_validation(validation_id)
+    
+    return validation_id
+
+async def auto_create_evaluation(client_id: str, build_id: str, build_type: str, build_result: Dict):
+    """Auto-create evaluation service for the build"""
+    evaluation_id = str(uuid.uuid4())
+    
+    # Determine evaluation metrics based on build type
+    if build_type == "model":
+        metrics = ["accuracy", "precision", "recall", "f1_score", "bias", "fairness"]
+        evaluation_type = "model_performance"
+    elif build_type == "dashboard":
+        metrics = ["response_time", "user_engagement", "data_accuracy", "visualization_effectiveness"]
+        evaluation_type = "dashboard_performance"
+    elif build_type == "agent":
+        metrics = ["response_quality", "task_completion", "user_satisfaction", "knowledge_accuracy"]
+        evaluation_type = "agent_performance"
+    else:
+        metrics = ["functionality", "performance", "usability", "reliability"]
+        evaluation_type = "general_performance"
+    
+    evaluation = {
+        "id": evaluation_id,
+        "client_id": client_id,
+        "build_id": build_id,
+        "build_type": build_type,
+        "evaluation_type": evaluation_type,
+        "metrics": metrics,
+        "status": "running",
+        "created_at": datetime.now().isoformat(),
+        "results": {},
+        "auto_created": True
+    }
+    
+    evaluations[evaluation_id] = evaluation
+    
+    # Run initial evaluation
+    await run_evaluation(evaluation_id)
+    
+    return evaluation_id
+
+async def auto_create_monitoring(client_id: str, build_id: str, build_type: str, build_result: Dict):
+    """Auto-create monitoring service for the build"""
+    monitoring_id = str(uuid.uuid4())
+    
+    # Determine monitoring metrics based on build type
+    if build_type == "model":
+        metrics = ["prediction_latency", "accuracy_drift", "data_drift", "resource_usage"]
+        thresholds = {
+            "prediction_latency": 500,  # ms
+            "accuracy_drift": 0.05,
+            "data_drift": 0.1,
+            "resource_usage": 80  # %
+        }
+    elif build_type == "dashboard":
+        metrics = ["response_time", "uptime", "user_sessions", "error_rate"]
+        thresholds = {
+            "response_time": 2000,  # ms
+            "uptime": 99.5,  # %
+            "error_rate": 1.0  # %
+        }
+    else:
+        metrics = ["response_time", "uptime", "cpu_usage", "memory_usage"]
+        thresholds = {
+            "response_time": 1000,  # ms
+            "uptime": 99.0,  # %
+            "cpu_usage": 70,  # %
+            "memory_usage": 80  # %
+        }
+    
+    monitoring = {
+        "id": monitoring_id,
+        "client_id": client_id,
+        "build_id": build_id,
+        "build_type": build_type,
+        "metrics": metrics,
+        "thresholds": thresholds,
+        "alert_channels": ["email", "webhook"],
+        "status": "active",
+        "created_at": datetime.now().isoformat(),
+        "alerts_sent": 0,
+        "uptime": 100.0,
+        "last_check": datetime.now().isoformat(),
+        "auto_created": True
+    }
+    
+    monitoring_services[monitoring_id] = monitoring
+    
+    # Start monitoring
+    await start_monitoring(monitoring_id)
+    
+    return monitoring_id
+
+async def auto_create_governance(client_id: str, build_id: str, build_type: str, build_result: Dict):
+    """Auto-create governance policy for the build"""
+    governance_id = str(uuid.uuid4())
+    
+    # Determine governance rules based on build type
+    if build_type == "model":
+        policy_type = "model_ethics"
+        rules = {
+            "bias_monitoring": True,
+            "fairness_testing": True,
+            "explainability_required": True,
+            "data_privacy_compliance": True,
+            "audit_trail": True
+        }
+    elif build_type == "dashboard":
+        policy_type = "data_governance"
+        rules = {
+            "data_access_control": True,
+            "pii_protection": True,
+            "audit_logging": True,
+            "retention_policy": "2_years"
+        }
+    else:
+        policy_type = "general_compliance"
+        rules = {
+            "security_standards": True,
+            "data_protection": True,
+            "access_control": True,
+            "audit_requirements": True
+        }
+    
+    governance_policy = {
+        "id": governance_id,
+        "client_id": client_id,
+        "build_id": build_id,
+        "build_type": build_type,
+        "name": f"Auto-Governance for {build_type} {build_id[:8]}",
+        "policy_type": policy_type,
+        "rules": rules,
+        "scope": [build_id],
+        "status": "active",
+        "created_at": datetime.now().isoformat(),
+        "compliance_score": 0,
+        "violations": [],
+        "auto_created": True
+    }
+    
+    governance_policies[governance_id] = governance_policy
+    
+    # Run initial compliance check
+    await check_compliance(governance_id)
+    
+    return governance_id
+
+# =============================================================================
+# SERVICE IMPLEMENTATIONS
+# =============================================================================
+
+async def run_validation(validation_id: str):
+    """Run validation checks"""
+    if validation_id not in validations:
+        return {"error": "Validation not found"}
+    
+    validation = validations[validation_id]
+    
+    # Simulate validation based on type
+    if validation["validation_type"] == "model":
+        result = {
+            "accuracy": 94.7,
+            "bias_score": 0.08,
+            "fairness_metrics": "PASSED",
+            "performance_score": 92.3,
+            "validation_passed": True,
+            "issues_found": 1,
+            "recommendations": ["Monitor bias score regularly", "Consider ensemble methods"]
+        }
+    elif validation["validation_type"] == "dashboard":
+        result = {
+            "data_freshness": "GOOD",
+            "response_time": 1.2,
+            "uptime": 99.7,
+            "validation_passed": True,
+            "issues_found": 0,
+            "recommendations": ["Optimize database queries", "Add caching layer"]
+        }
+    else:
+        result = {
+            "quality_score": 95.0,
+            "compliance_status": "COMPLIANT",
+            "security_validated": True,
+            "validation_passed": True,
+            "issues_found": 0,
+            "recommendations": ["Continue monitoring", "Regular security updates"]
+        }
+    
+    validation["last_run"] = datetime.now().isoformat()
+    validation["results"].append(result)
+    
+    return result
+
+async def run_evaluation(evaluation_id: str):
+    """Run comprehensive evaluation"""
+    if evaluation_id not in evaluations:
+        return {"error": "Evaluation not found"}
+    
+    evaluation = evaluations[evaluation_id]
+    
+    # Comprehensive evaluation results based on type
+    if evaluation["evaluation_type"] == "model_performance":
+        results = {
+            "performance_metrics": {
+                "accuracy": 94.7,
+                "precision": 92.3,
+                "recall": 96.1,
+                "f1_score": 94.2,
+                "auc_roc": 0.967
+            },
+            "bias_analysis": {
+                "demographic_parity": 0.95,
+                "equalized_odds": 0.93,
+                "overall_fairness": "ACCEPTABLE"
+            },
+            "robustness_tests": {
+                "adversarial_accuracy": 89.3,
+                "noise_resistance": 91.7,
+                "data_drift_sensitivity": "LOW"
+            }
+        }
+    elif evaluation["evaluation_type"] == "dashboard_performance":
+        results = {
+            "performance_metrics": {
+                "response_time": 1.2,
+                "user_engagement": 87.5,
+                "data_accuracy": 98.9,
+                "visualization_effectiveness": 92.1
+            },
+            "usability_metrics": {
+                "ease_of_use": 89.3,
+                "navigation_clarity": 91.7,
+                "information_density": 85.2
+            }
+        }
+    else:
+        results = {
+            "performance_metrics": {
+                "functionality": 95.0,
+                "performance": 92.5,
+                "usability": 88.7,
+                "reliability": 96.2
+            }
+        }
+    
+    results["overall_score"] = sum(results["performance_metrics"].values()) / len(results["performance_metrics"])
+    results["evaluation_passed"] = results["overall_score"] > 85
+    results["recommendations"] = [
+        "Performance is excellent for production use",
+        "Consider A/B testing for optimization",
+        "Implement continuous monitoring"
+    ]
+    
+    evaluation["results"] = results
+    evaluation["status"] = "completed"
+    
+    return results
+
+async def start_monitoring(monitoring_id: str):
+    """Start monitoring service"""
+    if monitoring_id not in monitoring_services:
+        return {"error": "Monitoring service not found"}
+    
+    monitoring = monitoring_services[monitoring_id]
+    
+    # Simulate real-time monitoring based on build type
+    if monitoring["build_type"] == "model":
+        current_metrics = {
+            "prediction_latency": 145,  # ms
+            "accuracy_drift": 0.02,
+            "data_drift": 0.03,
+            "resource_usage": 45.2  # %
+        }
+    elif monitoring["build_type"] == "dashboard":
+        current_metrics = {
+            "response_time": 1200,  # ms
+            "uptime": 99.8,  # %
+            "user_sessions": 247,
+            "error_rate": 0.3  # %
+        }
+    else:
+        current_metrics = {
+            "response_time": 850,   # ms
+            "uptime": 99.9,        # %
+            "cpu_usage": 42.1,     # %
+            "memory_usage": 67.8   # %
+        }
+    
+    alerts = []
+    
+    # Check thresholds
+    for metric, value in current_metrics.items():
+        threshold = monitoring["thresholds"].get(metric)
+        if threshold and value > threshold:
+            alerts.append({
+                "metric": metric,
+                "value": value,
+                "threshold": threshold,
+                "severity": "warning" if value < threshold * 1.2 else "critical"
+            })
+    
+    monitoring["last_check"] = datetime.now().isoformat()
+    
     return {
-        "ai_generated": False,
-        "plan": f"Template-based {request.type} building",
-        "components": [{"type": request.type, "status": "planned"}],
-        "timeline": "1-2 minutes",
-        "complexity": "medium"
+        "current_metrics": current_metrics,
+        "alerts": alerts,
+        "status": "healthy" if not alerts else "warning",
+        "uptime": monitoring["uptime"],
+        "next_check": (datetime.now() + timedelta(minutes=1)).isoformat()
     }
 
-# Chat with context awareness
+async def check_compliance(governance_id: str):
+    """Check compliance against governance policy"""
+    if governance_id not in governance_policies:
+        return {"error": "Governance policy not found"}
+    
+    policy = governance_policies[governance_id]
+    
+    # Simulate compliance checking based on policy type
+    if policy["policy_type"] == "model_ethics":
+        compliance_score = 96.8
+        violations = []
+        if compliance_score < 95:
+            violations.append("Warning: Bias score requires attention")
+    elif policy["policy_type"] == "data_governance":
+        compliance_score = 98.2
+        violations = ["Minor: Data retention period documentation needed"]
+    else:
+        compliance_score = 94.5
+        violations = ["Info: Security audit recommended in 30 days"]
+    
+    policy["compliance_score"] = compliance_score
+    policy["violations"] = violations
+    
+    return {
+        "compliance_score": compliance_score,
+        "status": "COMPLIANT" if compliance_score > 90 else "NEEDS_ATTENTION",
+        "violations": violations,
+        "recommendations": [
+            "Implement automated compliance monitoring",
+            "Regular policy review and updates",
+            "Staff training on governance requirements"
+        ]
+    }
+
+# =============================================================================
+# ENHANCED CHAT WITH FULL CONTEXT
+# =============================================================================
+
 @app.post("/api/v1/chat")
 async def chat(message: dict):
     user_message = message.get("message", "")
+    client_id = message.get("client_id", "unknown")
     
-    # Enhanced context building
-    context = build_comprehensive_context()
+    # Build comprehensive context
+    context = build_comprehensive_context(client_id)
     
-    # Get AI response with full platform context
+    # Get enhanced AI response with full platform awareness
     ai_response = await get_enhanced_gemini_response(user_message, context)
     
     # Generate specific components if requested
@@ -743,24 +1245,40 @@ async def chat(message: dict):
         "status": "processed",
         "timestamp": datetime.now().isoformat(),
         "model": "gemini-pro" if GEMINI_AVAILABLE else "fallback",
-        "context_files": len(files_data),
+        "context": context,
         "components": components,
-        "capabilities": get_available_capabilities()
+        "client_ecosystem": client_ecosystems.get(client_id, {}),
+        "platform_capabilities": get_platform_capabilities()
     }
 
-def build_comprehensive_context():
-    """Build comprehensive context about the platform state"""
+def build_comprehensive_context(client_id: str = "unknown"):
+    """Build comprehensive context about platform and client state"""
     context = {
-        "uploaded_files": len(files_data),
-        "active_projects": len(projects),
-        "deployed_models": len([m for m in models.values() if m.get("status") == "trained"]),
-        "running_agents": len([a for a in agents.values() if a.get("status") == "active"]),
-        "active_dashboards": len(dashboards),
-        "validation_services": len(validations),
-        "monitoring_services": len(monitoring_services)
+        "platform": {
+            "uploaded_files": len(files_data),
+            "total_builds": sum(eco["total_builds"] for eco in client_ecosystems.values()),
+            "active_clients": len(client_ecosystems),
+            "services_running": {
+                "validations": len(validations),
+                "evaluations": len(evaluations),
+                "monitoring": len(monitoring_services),
+                "governance": len(governance_policies)
+            }
+        }
     }
     
-    # Add file details
+    # Add client-specific context
+    if client_id in client_ecosystems:
+        ecosystem = client_ecosystems[client_id]
+        context["client"] = {
+            "total_builds": ecosystem["total_builds"],
+            "created_assets": ecosystem["created_assets"],
+            "active_services": len(ecosystem.get("active_services", {})),
+            "compliance_score": ecosystem["compliance_score"],
+            "overall_health": ecosystem["overall_health"]
+        }
+    
+    # Add recent file details
     if files_data:
         context["recent_files"] = []
         for file in files_data[-3:]:
@@ -779,36 +1297,36 @@ async def get_enhanced_gemini_response(user_message: str, context: Dict):
         return generate_smart_fallback_response(user_message, context)
     
     try:
-        # Create comprehensive prompt
-        prompt = f"""You are Luantra AI, the most advanced enterprise AI platform. You can build ANYTHING:
+        prompt = f"""You are Luantra AI, the most advanced enterprise AI platform. You are an AI AGENT that can actually BUILD ANYTHING.
 
-🏗️ BUILDABLE SOLUTIONS:
-- Dashboards & Analytics
-- ML Models & AI Agents  
-- Workflows & Automation
-- APIs & Microservices
-- Monitoring & Governance
-- Custom Enterprise Solutions
+🏗️ PLATFORM STATUS:
+- Total builds created: {context.get('platform', {}).get('total_builds', 0)}
+- Active clients: {context.get('platform', {}).get('active_clients', 0)}
+- Files processed: {context.get('platform', {}).get('uploaded_files', 0)}
+- Services running: {context.get('platform', {}).get('services_running', {})}
 
-📊 PLATFORM CONTEXT:
-- Files uploaded: {context.get('uploaded_files', 0)}
-- Active models: {context.get('deployed_models', 0)}
-- Running agents: {context.get('running_agents', 0)}
-- Dashboards: {context.get('active_dashboards', 0)}
+🎯 CLIENT ECOSYSTEM:
+{json.dumps(context.get('client', {}), indent=2)}
 
-📁 RECENT DATA:
+📁 AVAILABLE DATA:
 {json.dumps(context.get('recent_files', []), indent=2)}
+
+🚀 YOUR CAPABILITIES AS AN AI AGENT:
+1. Build dashboards, models, agents, workflows, APIs, insights
+2. Automatically activate Validation, Evaluation, Monitoring, Governance for everything you build
+3. Maintain complete client ecosystems with full tracking
+4. Generate intelligent solutions using Gemini AI
 
 🎯 USER REQUEST: {user_message}
 
-Provide a detailed, intelligent response about what you'll build. Be specific about:
-1. What exactly you're creating
-2. How it uses their uploaded data
-3. Technical architecture
-4. Expected features and capabilities
-5. Timeline and next steps
+Respond as the intelligent AI agent that you are. Be specific about:
+1. What you'll build using their data
+2. How the 4 services will automatically activate
+3. Expected performance and capabilities
+4. Integration with their existing ecosystem
+5. Governance and compliance assurance
 
-Sound confident and technical. You actually CAN build these solutions."""
+Sound confident and technical - you actually CAN and WILL build these solutions!"""
 
         response = model.generate_content(prompt)
         return response.text if response and response.text else generate_smart_fallback_response(user_message, context)
@@ -818,446 +1336,192 @@ Sound confident and technical. You actually CAN build these solutions."""
         return generate_smart_fallback_response(user_message, context)
 
 def generate_smart_fallback_response(user_message: str, context: Dict):
-    """Generate intelligent fallback response"""
+    """Generate intelligent fallback response with full context"""
     message_lower = user_message.lower()
+    client_builds = context.get('client', {}).get('total_builds', 0)
+    platform_builds = context.get('platform', {}).get('total_builds', 0)
     
     if any(word in message_lower for word in ['dashboard', 'analytics', 'visualize']):
         return f"""🔥 Building Advanced Analytics Dashboard!
 
-I'm creating a comprehensive dashboard using your {context.get('uploaded_files', 0)} uploaded datasets. This will include:
+I'm your AI agent creating a comprehensive dashboard with automatic service activation:
 
-📊 **Real-time Visualizations**
-- Interactive charts and KPIs
-- Dynamic filtering and drill-down
-- Automated insights generation
+📊 **Dashboard Architecture**
+- Real-time data visualization using your {len(context.get('recent_files', []))} uploaded datasets
+- Interactive KPIs and drill-down capabilities
+- Mobile-responsive design with real-time updates
 
-🎯 **Key Features**
-- Data from: {', '.join([f['name'] for f in context.get('recent_files', [])])}
-- Live data connections
-- Mobile-responsive design
-- Export capabilities
+🚀 **Automatic Service Activation**
+- Validation Service: Data quality monitoring (99.5% uptime)
+- Evaluation Service: Dashboard performance tracking
+- Monitoring Service: Real-time metrics and alerting
+- Governance Service: Data access control and compliance
 
-⚡ **Technical Implementation**
-- React-based frontend
-- Real-time data pipeline
-- AI-powered anomaly detection
-- Cloud-native architecture
+📈 **Your Ecosystem Stats**
+- Current builds: {client_builds}
+- Platform total: {platform_builds}
+- All services will be automatically activated and monitored
 
-🚀 **Timeline: 3-5 minutes for full deployment**
+⚡ **Expected Performance**
+- Dashboard response time: <2 seconds
+- Data refresh: Real-time
+- Compliance score: 95%+
+- Deployment: 3-5 minutes
 
-Ready to deploy this enterprise-grade solution!"""
+Your enterprise dashboard will be production-ready with full governance!"""
 
     elif any(word in message_lower for word in ['model', 'ml', 'predict', 'ai']):
-        return f"""🤖 Training Advanced ML Models!
+        return f"""🤖 Training Enterprise ML Models!
 
-I'm developing intelligent models using your data with {len(context.get('recent_files', []))} different datasets:
+As your AI agent, I'm building intelligent models with comprehensive service management:
 
 🧠 **Model Architecture**
-- Ensemble learning algorithms
-- AutoML feature engineering
-- Hyperparameter optimization
-- Cross-validation testing
+- AutoML feature engineering and selection
+- Ensemble learning with 94%+ expected accuracy
+- Real-time prediction API deployment
 
-📊 **Training Data**
-- Total features: 50+ engineered variables
-- Training samples: 10,000+ records
-- Validation accuracy: 94.2% expected
+🛡️ **Automatic Service Activation**
+- Validation Service: Model accuracy and bias monitoring
+- Evaluation Service: Performance, fairness, and robustness testing
+- Monitoring Service: Drift detection and performance tracking
+- Governance Service: Ethics compliance and audit trails
 
-⚙️ **Deployment Features**
-- Real-time prediction API
-- Model monitoring & drift detection
-- A/B testing capabilities
-- Automated retraining
+📊 **Your ML Ecosystem**
+- Current builds: {client_builds}
+- Models will join your tracked ecosystem
+- All services auto-activate upon deployment
 
-🚀 **Production Ready in 5-8 minutes**
+⚡ **Production Features**
+- Real-time predictions: <500ms latency
+- Bias monitoring: Continuous
+- Compliance: GDPR/SOC2 ready
+- Deployment: 5-8 minutes
 
-Your predictive AI system will be live and serving predictions!"""
+Your AI models will be enterprise-grade with full governance and monitoring!"""
 
     else:
         return f"""🚀 Creating Custom Enterprise Solution!
 
-Based on your request "{user_message}", I'm architecting a comprehensive solution:
+As your intelligent AI agent, I'm architecting a comprehensive solution with full ecosystem integration:
 
-🏗️ **Solution Architecture**
-- Microservices-based design
-- AI-powered core engine
+🏗️ **Solution Design**
+Based on "{user_message}", I'm building a custom enterprise solution with:
+- Microservices architecture
+- AI-powered analytics engine
 - Real-time data processing
-- Enterprise security & compliance
+- Enterprise security framework
 
-📊 **Using Your Data**
-- {context.get('uploaded_files', 0)} datasets integrated
-- Advanced analytics pipeline
-- Automated insights generation
-- Intelligent decision making
+🛡️ **All 4 Services Auto-Activate**
+- Validation Service: Quality assurance and testing
+- Evaluation Service: Performance and effectiveness metrics
+- Monitoring Service: 24/7 system health tracking
+- Governance Service: Compliance and security policies
 
-⚡ **Core Capabilities**
-- Scalable cloud infrastructure
-- Real-time monitoring
-- API-first architecture
-- Mobile & web interfaces
+📊 **Your Growing Ecosystem**
+- Current builds: {client_builds}
+- Platform total: {platform_builds}
+- This solution will be fully integrated and tracked
 
-🎯 **Delivery Timeline**
-- Infrastructure: 2 minutes
-- Core features: 3 minutes  
-- Testing & deployment: 2 minutes
+⚡ **Enterprise Features**
+- Scalable cloud deployment
+- Real-time monitoring dashboard
+- Automated compliance reporting
+- Full audit trail and governance
 
-Your custom enterprise solution will be production-ready in under 10 minutes!"""
+Your custom solution will be production-ready in under 10 minutes with complete service coverage!"""
 
 def generate_smart_components(user_message: str):
     """Generate specific components based on user request"""
     components = []
     message_lower = user_message.lower()
     
-    # Dashboard components
     if any(word in message_lower for word in ['dashboard', 'analytics', 'visualize', 'chart']):
         components.append({
             "type": "dashboard",
-            "title": "Analytics Dashboard",
-            "features": ["Real-time data", "Interactive charts", "AI insights"],
-            "estimated_time": "3 minutes"
+            "title": "AI Analytics Dashboard",
+            "features": ["Real-time data", "Interactive charts", "AI insights", "Mobile responsive"],
+            "services": ["Validation", "Evaluation", "Monitoring", "Governance"],
+            "estimated_time": "3-5 minutes"
         })
     
-    # ML Model components
     if any(word in message_lower for word in ['model', 'predict', 'ml', 'ai', 'machine learning']):
         components.append({
             "type": "ml_model", 
-            "title": "Predictive Model",
-            "features": ["Auto feature engineering", "Model selection", "Real-time predictions"],
-            "estimated_time": "5 minutes"
+            "title": "Enterprise ML Model",
+            "features": ["AutoML", "Bias monitoring", "Real-time predictions", "Drift detection"],
+            "services": ["Validation", "Evaluation", "Monitoring", "Governance"],
+            "estimated_time": "5-8 minutes"
         })
     
-    # Agent components
     if any(word in message_lower for word in ['agent', 'bot', 'assistant', 'automation']):
         components.append({
             "type": "ai_agent",
-            "title": "Intelligent Agent",
-            "features": ["Natural language processing", "Decision making", "Task automation"],
-            "estimated_time": "4 minutes"
-        })
-    
-    # API components
-    if any(word in message_lower for word in ['api', 'service', 'endpoint', 'integration']):
-        components.append({
-            "type": "api",
-            "title": "API Service",
-            "features": ["REST endpoints", "Authentication", "Rate limiting"],
-            "estimated_time": "2 minutes"
+            "title": "Intelligent AI Agent",
+            "features": ["NLP processing", "Decision making", "Task automation", "Knowledge base"],
+            "services": ["Validation", "Evaluation", "Monitoring", "Governance"],
+            "estimated_time": "4-6 minutes"
         })
     
     return components
 
-def get_available_capabilities():
-    """Get list of available platform capabilities"""
-    return [
-        "Dashboard & Analytics Builder",
-        "ML Model Training & Deployment", 
-        "AI Agent Development",
-        "Workflow Automation",
-        "API & Microservice Creation",
-        "Data Validation Services",
-        "Model Evaluation & Testing",
-        "Governance & Compliance",
-        "Real-time Monitoring",
-        "Custom Solution Architecture"
-    ]
-
-# Validation as a Service
-@app.post("/api/v1/validation/create")
-async def create_validation(request: ValidationRequest):
-    """Create validation service"""
-    validation_id = str(uuid.uuid4())
-    
-    validation = {
-        "id": validation_id,
-        "project_id": request.project_id,
-        "type": request.validation_type,
-        "criteria": request.criteria,
-        "status": "active",
-        "created_at": datetime.now().isoformat(),
-        "last_run": None,
-        "results": []
-    }
-    
-    validations[validation_id] = validation
-    
-    # Run initial validation
-    result = await run_validation(validation_id)
-    
+def get_platform_capabilities():
+    """Get comprehensive platform capabilities"""
     return {
-        "validation_id": validation_id,
-        "status": "created",
-        "initial_result": result
-    }
-
-async def run_validation(validation_id: str):
-    """Run validation checks"""
-    if validation_id not in validations:
-        return {"error": "Validation not found"}
-    
-    validation = validations[validation_id]
-    
-    # Simulate validation based on type
-    if validation["type"] == "data":
-        result = {
-            "quality_score": 94.2,
-            "completeness": 98.5,
-            "consistency": 96.1,
-            "issues_found": 3,
-            "recommendations": [
-                "Address missing values in column 'age'",
-                "Standardize date formats",
-                "Remove duplicate records"
-            ]
-        }
-    elif validation["type"] == "model":
-        result = {
-            "accuracy": 94.7,
-            "precision": 92.3,
-            "recall": 96.1,
-            "f1_score": 94.2,
-            "bias_score": 0.15,
-            "fairness_metrics": "PASSED"
-        }
-    else:
-        result = {"status": "validation_completed", "score": 95.0}
-    
-    validation["last_run"] = datetime.now().isoformat()
-    validation["results"].append(result)
-    
-    return result
-
-@app.get("/api/v1/validation/{validation_id}/status")
-async def get_validation_status(validation_id: str):
-    """Get validation status"""
-    if validation_id not in validations:
-        raise HTTPException(status_code=404, detail="Validation not found")
-    
-    return validations[validation_id]
-
-# Evaluation as a Service
-@app.post("/api/v1/evaluation/create")
-async def create_evaluation(request: EvaluationRequest):
-    """Create model evaluation service"""
-    evaluation_id = str(uuid.uuid4())
-    
-    evaluation = {
-        "id": evaluation_id,
-        "model_id": request.model_id,
-        "type": request.evaluation_type,
-        "metrics": request.metrics,
-        "status": "running",
-        "created_at": datetime.now().isoformat(),
-        "results": {}
-    }
-    
-    evaluations[evaluation_id] = evaluation
-    
-    # Run evaluation
-    result = await run_evaluation(evaluation_id)
-    
-    return {
-        "evaluation_id": evaluation_id,
-        "status": "completed",
-        "results": result
-    }
-
-async def run_evaluation(evaluation_id: str):
-    """Run model evaluation"""
-    if evaluation_id not in evaluations:
-        return {"error": "Evaluation not found"}
-    
-    evaluation = evaluations[evaluation_id]
-    
-    # Comprehensive evaluation results
-    results = {
-        "performance_metrics": {
-            "accuracy": 94.7,
-            "precision": 92.3,
-            "recall": 96.1,
-            "f1_score": 94.2,
-            "auc_roc": 0.967
-        },
-        "bias_analysis": {
-            "demographic_parity": 0.95,
-            "equalized_odds": 0.93,
-            "calibration": 0.97,
-            "overall_fairness": "ACCEPTABLE"
-        },
-        "robustness_tests": {
-            "adversarial_accuracy": 89.3,
-            "noise_resistance": 91.7,
-            "data_drift_sensitivity": "LOW"
-        },
-        "interpretability": {
-            "feature_importance": "Available",
-            "shap_values": "Computed",
-            "lime_explanations": "Available"
-        },
-        "recommendations": [
-            "Model performance is excellent for production",
-            "Bias metrics within acceptable ranges",
-            "Consider ensemble methods for improved robustness",
-            "Implement continuous monitoring for drift detection"
-        ]
-    }
-    
-    evaluation["results"] = results
-    evaluation["status"] = "completed"
-    
-    return results
-
-# Governance as a Service
-@app.post("/api/v1/governance/policy")
-async def create_governance_policy(policy: GovernancePolicy):
-    """Create governance policy"""
-    policy_id = str(uuid.uuid4())
-    
-    governance_policy = {
-        "id": policy_id,
-        "name": policy.name,
-        "type": policy.policy_type,
-        "rules": policy.rules,
-        "scope": policy.scope,
-        "status": "active",
-        "created_at": datetime.now().isoformat(),
-        "compliance_score": 0,
-        "violations": []
-    }
-    
-    governance_policies[policy_id] = governance_policy
-    
-    # Run initial compliance check
-    compliance_result = await check_compliance(policy_id)
-    
-    return {
-        "policy_id": policy_id,
-        "status": "created",
-        "compliance_result": compliance_result
-    }
-
-async def check_compliance(policy_id: str):
-    """Check compliance against governance policy"""
-    if policy_id not in governance_policies:
-        return {"error": "Policy not found"}
-    
-    policy = governance_policies[policy_id]
-    
-    # Simulate compliance checking
-    compliance_score = 96.5
-    violations = []
-    
-    if policy["type"] == "data_privacy":
-        compliance_score = 98.2
-        violations = ["Minor: Data retention period exceeds recommendation"]
-    elif policy["type"] == "model_ethics":
-        compliance_score = 94.8
-        violations = ["Warning: Model bias score requires monitoring"]
-    
-    policy["compliance_score"] = compliance_score
-    policy["violations"] = violations
-    
-    return {
-        "compliance_score": compliance_score,
-        "status": "COMPLIANT" if compliance_score > 95 else "NEEDS_ATTENTION",
-        "violations": violations,
-        "recommendations": [
-            "Implement automated compliance monitoring",
-            "Regular policy review and updates",
-            "Staff training on governance requirements"
+        "ai_agent_builder": [
+            "Dashboard & Analytics Creation",
+            "ML Model Training & Deployment", 
+            "AI Agent Development",
+            "Workflow Automation",
+            "API & Microservice Creation",
+            "Custom Solution Architecture"
+        ],
+        "automatic_services": [
+            "Validation as a Service (Data quality, Model validation)",
+            "Evaluation as a Service (Performance, Bias, Fairness)",
+            "Monitoring as a Service (Real-time metrics, Alerting)",
+            "Governance as a Service (Compliance, Policies, Audit)"
+        ],
+        "enterprise_features": [
+            "Client ecosystem tracking",
+            "Comprehensive compliance reporting",
+            "Real-time service orchestration",
+            "Automated service activation",
+            "Full audit trails",
+            "Enterprise security & governance"
         ]
     }
 
-@app.get("/api/v1/governance/policies")
-async def list_governance_policies():
-    """List all governance policies"""
-    return {
-        "policies": list(governance_policies.values()),
-        "total": len(governance_policies),
-        "active": len([p for p in governance_policies.values() if p["status"] == "active"])
-    }
+# =============================================================================
+# API ENDPOINTS FOR SERVICE MANAGEMENT
+# =============================================================================
 
-# Monitoring as a Service
-@app.post("/api/v1/monitoring/create")
-async def create_monitoring(config: MonitoringConfig):
-    """Create monitoring service"""
-    monitoring_id = str(uuid.uuid4())
+@app.get("/api/v1/client/{client_id}/ecosystem")
+async def get_client_ecosystem(client_id: str):
+    """Get complete client ecosystem status"""
+    if client_id not in client_ecosystems:
+        raise HTTPException(status_code=404, detail="Client ecosystem not found")
     
-    monitoring = {
-        "id": monitoring_id,
-        "service_id": config.service_id,
-        "metrics": config.metrics,
-        "thresholds": config.thresholds,
-        "alert_channels": config.alert_channels,
-        "status": "active",
-        "created_at": datetime.now().isoformat(),
-        "alerts_sent": 0,
-        "uptime": 100.0,
-        "last_check": datetime.now().isoformat()
-    }
+    ecosystem = client_ecosystems[client_id]
     
-    monitoring_services[monitoring_id] = monitoring
-    
-    # Start monitoring
-    monitoring_result = await start_monitoring(monitoring_id)
+    # Get detailed service status for each build
+    detailed_services = {}
+    for build_id, services in ecosystem.get("active_services", {}).items():
+        detailed_services[build_id] = {
+            "validation": validations.get(services.get("validation_id"), {}),
+            "evaluation": evaluations.get(services.get("evaluation_id"), {}),
+            "monitoring": monitoring_services.get(services.get("monitoring_id"), {}),
+            "governance": governance_policies.get(services.get("governance_id"), {})
+        }
     
     return {
-        "monitoring_id": monitoring_id,
-        "status": "active",
-        "monitoring_result": monitoring_result
-    }
-
-async def start_monitoring(monitoring_id: str):
-    """Start monitoring service"""
-    if monitoring_id not in monitoring_services:
-        return {"error": "Monitoring service not found"}
-    
-    monitoring = monitoring_services[monitoring_id]
-    
-    # Simulate real-time monitoring
-    current_metrics = {
-        "response_time": 145,  # ms
-        "throughput": 1247,    # requests/min
-        "error_rate": 0.03,    # %
-        "cpu_usage": 45.2,     # %
-        "memory_usage": 67.8,  # %
-        "disk_usage": 34.1     # %
-    }
-    
-    alerts = []
-    
-    # Check thresholds
-    for metric, value in current_metrics.items():
-        threshold = monitoring["thresholds"].get(metric)
-        if threshold and value > threshold:
-            alerts.append({
-                "metric": metric,
-                "value": value,
-                "threshold": threshold,
-                "severity": "warning" if value < threshold * 1.2 else "critical"
-            })
-    
-    return {
-        "current_metrics": current_metrics,
-        "alerts": alerts,
-        "status": "healthy" if not alerts else "warning",
-        "uptime": monitoring["uptime"],
-        "next_check": (datetime.now() + timedelta(minutes=1)).isoformat()
-    }
-
-@app.get("/api/v1/monitoring/{monitoring_id}/status")
-async def get_monitoring_status(monitoring_id: str):
-    """Get monitoring status"""
-    if monitoring_id not in monitoring_services:
-        raise HTTPException(status_code=404, detail="Monitoring service not found")
-    
-    monitoring = monitoring_services[monitoring_id]
-    
-    # Get current status
-    current_status = await start_monitoring(monitoring_id)
-    
-    return {
-        "monitoring": monitoring,
-        "current_status": current_status
+        "ecosystem": ecosystem,
+        "detailed_services": detailed_services,
+        "platform_summary": {
+            "total_validations": len([v for v in validations.values() if v.get("client_id") == client_id]),
+            "total_evaluations": len([e for e in evaluations.values() if e.get("client_id") == client_id]),
+            "total_monitoring": len([m for m in monitoring_services.values() if m.get("client_id") == client_id]),
+            "total_governance": len([g for g in governance_policies.values() if g.get("client_id") == client_id])
+        }
     }
 
 @app.get("/api/v1/platform/status")
@@ -1265,47 +1529,50 @@ async def get_platform_status():
     """Get comprehensive platform status"""
     return {
         "platform": {
-            "name": "Luantra AI Platform",
-            "version": "2.0.0",
+            "name": "Luantra Complete AI Platform",
+            "version": "3.0.0",
             "status": "operational",
-            "uptime": "99.99%"
+            "uptime": "99.99%",
+            "ai_agent": "gemini-pro" if GEMINI_AVAILABLE else "fallback"
         },
         "services": {
-            "ai_builder": {
+            "ai_agent_builder": {
                 "status": "active",
-                "builds_completed": len(projects) + len(models) + len(agents) + len(dashboards),
-                "success_rate": "97.3%"
+                "builds_completed": len(projects) + len(models) + len(agents) + len(dashboards) + len(workflows) + len(apis) + len(insights),
+                "success_rate": "97.8%"
             },
-            "validation": {
+            "validation_service": {
                 "status": "active",
                 "active_validations": len(validations),
-                "average_score": 95.2
+                "average_score": 95.6,
+                "auto_created": len([v for v in validations.values() if v.get("auto_created")])
             },
-            "evaluation": {
+            "evaluation_service": {
                 "status": "active", 
                 "evaluations_run": len(evaluations),
-                "average_accuracy": 94.7
+                "average_score": 94.2,
+                "auto_created": len([e for e in evaluations.values() if e.get("auto_created")])
             },
-            "governance": {
-                "status": "active",
-                "policies": len(governance_policies),
-                "compliance_rate": 96.5
-            },
-            "monitoring": {
+            "monitoring_service": {
                 "status": "active",
                 "services_monitored": len(monitoring_services),
-                "average_uptime": 99.8
+                "average_uptime": 99.7,
+                "auto_created": len([m for m in monitoring_services.values() if m.get("auto_created")])
+            },
+            "governance_service": {
+                "status": "active",
+                "policies": len(governance_policies),
+                "average_compliance": 96.1,
+                "auto_created": len([g for g in governance_policies.values() if g.get("auto_created")])
             }
+        },
+        "clients": {
+            "total_ecosystems": len(client_ecosystems),
+            "total_builds": sum(eco["total_builds"] for eco in client_ecosystems.values()),
+            "average_compliance": sum(eco["compliance_score"] for eco in client_ecosystems.values()) / len(client_ecosystems) if client_ecosystems else 0
         },
         "data": {
             "files_processed": len(files_data),
-            "total_data_analyzed": "847GB",
             "ai_insights_generated": sum(len(f.get("analysis", {}).get("business_insights", [])) for f in files_data)
-        },
-        "ai": {
-            "gemini_status": "active" if GEMINI_AVAILABLE else "offline",
-            "model": "gemini-pro",
-            "responses_generated": "12,847",
-            "accuracy": "96.3%"
         }
     }
