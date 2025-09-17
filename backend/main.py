@@ -732,6 +732,23 @@ async def train_real_model(request: dict):
         
     except Exception as e:
         raise HTTPException(500, f"Training failed: {str(e)}")
+    
+    @app.get("/api/v1/training/{job_id}/status")
+async def get_training_status(job_id: str):
+    """Get real training status from Vertex AI"""
+    try:
+        job = aiplatform.AutoMLTabularTrainingJob.get(job_id)
+        
+        return {
+            "job_id": job_id,
+            "state": job.state.name,  # RUNNING, SUCCEEDED, FAILED
+            "progress_percentage": getattr(job, 'progress_percentage', 0),
+            "model_id": job.model_name if hasattr(job, 'model_name') else None,
+            "start_time": job.start_time.isoformat() if job.start_time else None,
+            "end_time": job.end_time.isoformat() if job.end_time else None
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Status check failed: {str(e)}")
         
     # Get Deployed Solution - FIXED
     @app.get("/api/v1/deployed/{deployment_id}")
@@ -1264,6 +1281,17 @@ async def train_real_model(request: dict):
             "status": "active",
             "timestamp": datetime.now().isoformat()
         }
+        
+    @app.post("/api/v1/train/real")
+    async def train_real_model(request: dict):
+        if not VERTEX_AI_AVAILABLE:
+            raise HTTPException(503, "Vertex AI not available - ensure proper authentication")
+        
+        try:
+            # Your existing training code here
+            pass
+        except Exception as e:
+            raise HTTPException(500, f"Training failed: {str(e)}")
 
     @app.get("/api/v1/platform/status")
     def platform_status():
@@ -1457,4 +1485,11 @@ async def train_real_model(request: dict):
 
     if __name__ == "__main__":
         import uvicorn
-        uvicorn.run(app, host="0.0.0.0", port=8080)
+        import os
+        port = int(os.environ.get("PORT", 8080))
+        uvicorn.run(app, host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)
