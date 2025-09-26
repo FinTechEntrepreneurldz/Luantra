@@ -27,17 +27,22 @@ jobs:
     - name: Configure Docker for Google Cloud
       run: gcloud auth configure-docker
       
+    - name: Create Dockerfile in backend directory
+      run: |
+        cd backend
+        cat > Dockerfile << 'DOCKERFILE'
+        FROM node:18-alpine
+        WORKDIR /app
+        COPY package*.json ./
+        RUN npm ci --only=production
+        COPY . .
+        EXPOSE 3001
+        CMD ["node", "server.js"]
+        DOCKERFILE
+        
     - name: Build and deploy backend to Cloud Run
       run: |
         cd backend
-        echo "FROM node:18-alpine
-        WORKDIR /app
-        COPY package*.json ./
-        RUN npm install
-        COPY . .
-        EXPOSE 3001
-        CMD [\"node\", \"server.js\"]" > Dockerfile
-        
         gcloud builds submit --tag gcr.io/luantra-platform/backend
         gcloud run deploy luantra-backend \
           --image gcr.io/luantra-platform/backend \
@@ -45,27 +50,3 @@ jobs:
           --region us-central1 \
           --allow-unauthenticated \
           --port 3001
-          
-  deploy-frontend:
-    runs-on: ubuntu-latest
-    needs: deploy-backend
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Node.js  
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    - name: Install and build frontend
-      run: |
-        cd frontend
-        npm install
-        npm run build
-        
-    - name: Deploy frontend to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./frontend/out
