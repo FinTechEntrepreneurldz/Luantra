@@ -200,7 +200,7 @@ const AgentBuilderPage: React.FC = () => {
     
     try {
       // Save to backend
-      const response = await fetch('http://localhost:3001/api/agents/create', {
+      const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/agents/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

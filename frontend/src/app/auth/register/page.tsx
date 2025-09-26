@@ -143,7 +143,7 @@ const RegisterPage = () => {
     setErrors({});
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/register', {
+      const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

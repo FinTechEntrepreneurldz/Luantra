@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://luantra-backend-fldu2pxc4a-uc.a.run.app';
 
 export interface UploadResponse {
   message: string;

@@ -19,7 +19,7 @@ export default function PredictPage() {
 
   const loadEndpoints = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/endpoints');
+      const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/endpoints');
       if (response.ok) {
         const data = await response.json();
         setEndpoints(data.endpoints || []);
@@ -36,7 +36,7 @@ export default function PredictPage() {
     try {
       console.log('Generating 100% dynamic UI for:', endpoint.displayName);
       
-      const response = await fetch('http://localhost:3001/api/models/generate-dynamic-ui', {
+      const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/models/generate-dynamic-ui', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

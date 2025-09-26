@@ -221,7 +221,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const loadChatHistory = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/chat-history/dashboard-session');
+        const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/chat-history/dashboard-session');
         const data = await response.json();
         
         if (data.success && data.history.length > 0) {
@@ -251,7 +251,7 @@ const DashboardPage = () => {
     if (autoRefreshEnabled || showProgress) {
       intervalId = setInterval(async () => {
         try {
-          const response = await fetch('http://localhost:3001/api/training-progress/dashboard-session');
+          const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/training-progress/dashboard-session');
           const data = await response.json();
           
           if (data.hasActiveJob && data.progress) {
@@ -289,7 +289,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const messageCheckInterval = setInterval(async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/chat-history/dashboard-session');
+        const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/chat-history/dashboard-session');
         const data = await response.json();
         
         if (data.success && data.history.length > chatMessages.length) {
@@ -373,10 +373,10 @@ const DashboardPage = () => {
   const loadPlatformData = async () => {
     try {
       const [datasetsRes, modelsRes, jobsRes, endpointsRes] = await Promise.all([
-        fetch('http://localhost:3001/api/datasets').catch(() => ({ ok: false })),
-        fetch('http://localhost:3001/api/models').catch(() => ({ ok: false })),
-        fetch('http://localhost:3001/api/training-jobs').catch(() => ({ ok: false })),
-        fetch('http://localhost:3001/api/endpoints').catch(() => ({ ok: false }))
+        fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/datasets').catch(() => ({ ok: false })),
+        fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/models').catch(() => ({ ok: false })),
+        fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/training-jobs').catch(() => ({ ok: false })),
+        fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/endpoints').catch(() => ({ ok: false }))
       ]);
 
       const datasets = datasetsRes.ok ? ensureArray(await datasetsRes.json()) : [];
@@ -416,7 +416,7 @@ const DashboardPage = () => {
     setIsLoading(true);
   
     try {
-      const response = await fetch('http://localhost:3001/api/chat/luantra-agent', {
+      const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/chat/luantra-agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -541,7 +541,7 @@ const DashboardPage = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('http://localhost:3001/api/upload', {
+      const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/upload', {
         method: 'POST',
         body: formData
       });
@@ -692,7 +692,7 @@ const handleClearChat = async () => {
     setIsLoading(true);
     
     // Call backend to clear chat history
-    const response = await fetch('http://localhost:3001/api/clear-chat/dashboard-session', {
+    const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/clear-chat/dashboard-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -783,7 +783,7 @@ const ChatHeader = () => (
   // Start Luantra Agent training
   const startLuantraAgentTraining = async (trainingData: any) => {
     try {
-      const response = await fetch('http://localhost:3001/api/agents/train', {
+      const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/agents/train', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(trainingData)
@@ -819,7 +819,7 @@ const ChatHeader = () => (
   // Deploy agent
   const deployAgent = async (modelId: string) => {
     try {
-      const response = await fetch('http://localhost:3001/api/agents/deploy', {
+      const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/agents/deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ modelId })
@@ -871,7 +871,7 @@ const ChatHeader = () => (
       }]);
       
       // Call backend with enhanced payload
-      const response = await fetch('http://localhost:3001/api/generate-model-interface', {
+      const response = await fetch('https://luantra-backend-fldu2pxc4a-uc.a.run.app/api/generate-model-interface', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
