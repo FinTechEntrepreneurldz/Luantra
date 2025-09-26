@@ -4,8 +4,6 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  basePath: "/Luantra",
-  assetPrefix: "/Luantra/",
   eslint: {
     ignoreDuringBuilds: true,
   },
