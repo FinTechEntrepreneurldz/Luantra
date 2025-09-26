@@ -1,0 +1,255 @@
+const express = require('express');
+const multer = require('multer');
+const cors = require('cors');
+const helmet = require('helmet');
+require('dotenv').config();
+
+const storageService = require('./services/storage');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Middleware
+app.use(helmet());
+app.use(cors({
+  origin: 'http://localhost:3000', // Frontend URL
+  credentials: true
+}));
+app.use(express.json());
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow common data formats
+    const allowedTypes = [
+      'text/csv',
+      'application/json',
+      'text/plain',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('File type not supported'), false);
+    }
+  }
+});
+
+// Routes
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    service: 'Luantra Backend',
+    timestamp: new Date().toISOString(),
+    project: process.env.PROJECT_ID
+  });
+});
+
+// Upload dataset
+app.post('/api/upload/dataset', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const { originalname, mimetype, buffer, size } = req.file;
+    const { description, tags } = req.body;
+
+    console.log(`Uploading file: ${originalname}, size: ${size} bytes`);
+
+    const result = await storageService.uploadDataset(
+      { buffer, mimetype },
+      `datasets/${Date.now()}-${originalname}`,
+      { description, tags, originalName: originalname }
+    );
+
+    console.log('Upload successful:', result);
+
+    res.json({
+      message: 'Dataset uploaded successfully',
+      file: result,
+      metadata: {
+        originalName: originalname,
+        size,
+        type: mimetype,
+        uploadedAt: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ 
+      error: 'Upload failed', 
+      details: error.message 
+    });
+  }
+});
+
+// List datasets
+app.get('/api/datasets', async (req, res) => {
+  try {
+    const datasets = await storageService.listDatasets();
+    res.json({ datasets });
+  } catch (error) {
+    console.error('List datasets error:', error);
+    res.status(500).json({ 
+      error: 'Failed to list datasets', 
+      details: error.message 
+    });
+  }
+});
+
+// Error handling
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File too large' });
+    }
+  }
+  res.status(500).json({ error: error.message });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Luantra Backend running on port ${PORT}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  console.log(`📊 Project: ${process.env.PROJECT_ID}`);
+});
+
+// Import Vertex AI service
+const vertexaiService = require('./services/vertexai');
+
+// Create model from uploaded dataset
+app.post('/api/models/create', async (req, res) => {
+  try {
+    const { datasetPath, modelName, modelType = 'classification' } = req.body;
+
+    if (!datasetPath || !modelName) {
+      return res.status(400).json({ 
+        error: 'Dataset path and model name are required' 
+      });
+    }
+
+    console.log(`Creating model: ${modelName} from dataset: ${datasetPath}`);
+
+    const result = await vertexaiService.createAutoMLModel(
+      datasetPath,
+      modelName,
+      modelType
+    );
+
+    res.json({
+      message: 'Model training started successfully',
+      model: result,
+      status: 'TRAINING',
+      vertexAIJob: result.trainingJobName
+    });
+
+  } catch (error) {
+    console.error('Model creation error:', error);
+    res.status(500).json({ 
+      error: 'Model creation failed', 
+      details: error.message 
+    });
+  }
+});
+
+// Get training job status
+app.get('/api/models/training/:jobId/status', async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const jobName = `${vertexaiService.parent}/customJobs/${jobId}`;
+    
+    const status = await vertexaiService.getTrainingJobStatus(jobName);
+    
+    res.json({
+      jobId,
+      status: status.state,
+      details: status
+    });
+
+  } catch (error) {
+    console.error('Error getting training status:', error);
+    res.status(500).json({ 
+      error: 'Failed to get training status', 
+      details: error.message 
+    });
+  }
+});
+
+// List all models
+app.get('/api/models', async (req, res) => {
+  try {
+    const models = await vertexaiService.listModels();
+    res.json({ models });
+  } catch (error) {
+    console.error('Error listing models:', error);
+    res.status(500).json({ 
+      error: 'Failed to list models', 
+      details: error.message 
+    });
+  }
+});
+
+// Deploy model
+app.post('/api/models/deploy', async (req, res) => {
+  try {
+    const { modelName, endpointName } = req.body;
+
+    if (!modelName || !endpointName) {
+      return res.status(400).json({ 
+        error: 'Model name and endpoint name are required' 
+      });
+    }
+
+    const result = await vertexaiService.deployModel(modelName, endpointName);
+
+    res.json({
+      message: 'Model deployment started',
+      deployment: result
+    });
+
+  } catch (error) {
+    console.error('Model deployment error:', error);
+    res.status(500).json({ 
+      error: 'Model deployment failed', 
+      details: error.message 
+    });
+  }
+});
+
+
+// Import dataset analyzer
+const datasetAnalyzer = require('./services/datasetAnalyzer');
+
+// Analyze dataset endpoint
+app.post('/api/datasets/analyze', async (req, res) => {
+  try {
+    const { datasetPath } = req.body;
+
+    if (!datasetPath) {
+      return res.status(400).json({ error: 'Dataset path is required' });
+    }
+
+    console.log(`Analyzing dataset: ${datasetPath}`);
+    const analysis = await datasetAnalyzer.analyzeDataset(datasetPath);
+
+    res.json({
+      message: 'Dataset analysis completed',
+      analysis
+    });
+
+  } catch (error) {
+    console.error('Dataset analysis error:', error);
+    res.status(500).json({ 
+      error: 'Dataset analysis failed', 
+      details: error.message 
+    });
+  }
+});
+

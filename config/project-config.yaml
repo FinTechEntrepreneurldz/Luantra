@@ -1,0 +1,26 @@
+project:
+  id: luantra-platform
+  name: "Luantra AI Platform"
+  region: us-central1
+  billing_account: 01D200-1AFD9E-80C69D
+
+service_accounts:
+  backend: luantra-backend@luantra-platform.iam.gserviceaccount.com
+
+storage:
+  datasets_bucket: luantra-platform-datasets
+  models_bucket: luantra-platform-models
+  artifacts_bucket: luantra-platform-artifacts
+
+apis_enabled:
+  - aiplatform.googleapis.com
+  - storage.googleapis.com
+  - cloudbuild.googleapis.com
+  - run.googleapis.com
+  - cloudfunctions.googleapis.com
+  - firestore.googleapis.com
+  - secretmanager.googleapis.com
+  - compute.googleapis.com
+  - container.googleapis.com
+  - dialogflow.googleapis.com
+  - discoveryengine.googleapis.com
